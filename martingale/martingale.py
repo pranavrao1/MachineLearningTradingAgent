@@ -28,10 +28,10 @@ GT ID: 900897987 (replace with your GT ID)
 import numpy as np  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
 def author():  		   	  			    		  		  		    	 		 		   		 		  
-        return 'tb34' # replace tb34 with your Georgia Tech username.  		   	  			    		  		  		    	 		 		   		 		  
+        return 'prao43' 		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
 def gtid():  		   	  			    		  		  		    	 		 		   		 		  
-	return 900897987 # replace with your GT ID number  		   	  			    		  		  		    	 		 		   		 		  
+	return 903205913 # replace with your GT ID number  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
 def get_spin_result(win_prob):  		   	  			    		  		  		    	 		 		   		 		  
 	result = False  		   	  			    		  		  		    	 		 		   		 		  

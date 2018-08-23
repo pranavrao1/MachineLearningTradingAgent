@@ -40,11 +40,15 @@ def get_spin_result(win_prob):
 	return result  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
 def test_code():  		   	  			    		  		  		    	 		 		   		 		  
-	win_prob = 0.60 # set appropriately to the probability of a win  		   	  			    		  		  		    	 		 		   		 		  
+	win_prob = 0.11 # set appropriately to the probability of a win  		   	  			    		  		  		    	 		 		   		 		  
 	np.random.seed(gtid()) # do this only once  		   	  			    		  		  		    	 		 		   		 		  
 	print get_spin_result(win_prob) # test the roulette spin  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
-	# add your code here to implement the experiments  		   	  			    		  		  		    	 		 		   		 		  
+	# add your code here to implement the experiments  
+	spin = False
+	while not spin:
+		spin = get_spin_result(win_prob)
+		print spin
   		   	  			    		  		  		    	 		 		   		 		  
 if __name__ == "__main__":  		   	  			    		  		  		    	 		 		   		 		  
     test_code()  		   	  			    		  		  		    	 		 		   		 		  

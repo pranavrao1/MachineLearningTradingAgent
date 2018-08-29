@@ -26,7 +26,7 @@ GT ID: 900897987 (replace with your GT ID)
 """
 
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 def author():
     return 'prao43'
@@ -50,8 +50,65 @@ def test_code():
     get_spin_result(win_prob)  # test the roulette spin
 
     # add your code here to implement the experiments
-    figure_one = run_simulation(1000, win_prob)
-    print figure_one
+    # Figure 1
+    for i in range(1,10):
+        figure_one = run_simulation(1000, win_prob)
+        label = "Run " + str(i)
+        plt.plot(figure_one, label=label)
+    plt.axis([0,300,-256,100])
+    plt.title('Figure 1: 10 separate simulations with 1000 bets')
+    plt.xlabel('Number of Simulations')
+    plt.ylabel('Winnings in $')
+    plt.legend(loc='lower right')
+    plt.grid(True)
+    plt.savefig('Figure 1')
+    plt.clf()
+    plt.cla()
+    plt.close()
+
+    # Figure 2
+    array = np.zeros((1000,1000), dtype=np.int_)
+    for i in range(1, 1000):
+        simulation_results = run_simulation(1000, win_prob)
+        array[i-1] = simulation_results
+    mean_value = array.mean(axis=0)
+    std_value = array.std(axis=0)
+    plt.plot(mean_value, label="Mean value of winning for each spin")
+    plt.plot(mean_value + std_value, label="Mean value + standard Deviation")
+    plt.plot(mean_value - std_value, label="Mean value - standard Deviation")
+    plt.axis([0,300,-256,100])
+    plt.title('Figure 2: Mean values for 1000 separate simulations with 1000 bets each')
+    plt.xlabel('Number of Simulations')
+    plt.ylabel('Winnings in $')
+    plt.legend(loc='lower right')
+    plt.grid(True)
+    plt.savefig('Figure 2')
+    plt.clf()
+    plt.cla()
+    plt.close()
+
+    # Figure 3
+    array_figure3 = np.zeros((1000,1000), dtype=np.int_)
+    for i in range(1, 1000):
+        simulation_results = run_simulation(1000, win_prob)
+        array_figure3[i-1] = simulation_results
+    median_value = np.median(array_figure3, axis=0)
+    std_value_3 = array_figure3.std(axis=0)
+    plt.plot(median_value, label="Median value of winning for each spin")
+    plt.plot(median_value + std_value_3, label="Median value + standard Deviation")
+    plt.plot(median_value - std_value_3, label="Median value - standard Deviation")
+    plt.axis([0,300,-256,100])
+    plt.title('Figure 3: Median values for 1000 separate simulations with 1000 bets each')
+    plt.xlabel('Number of Simulations')
+    plt.ylabel('Winnings in $')
+    plt.legend(loc='lower right')
+    plt.grid(True)
+    plt.savefig('Figure 3')
+    plt.clf()
+    plt.cla()
+    plt.close()
+
+
 
 
 def run_simulation(number_of_bets, win_prob):
@@ -62,7 +119,7 @@ def run_simulation(number_of_bets, win_prob):
         if winnings[counter - 1] < max_winnings:
             bet_amount = 1
             spin = False
-            while not spin:
+            while not spin and counter < number_of_bets:
                 spin = get_spin_result(win_prob)
                 if spin:
                     winnings[counter] = winnings[counter - 1] + bet_amount

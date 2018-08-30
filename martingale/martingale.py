@@ -45,19 +45,19 @@ def get_spin_result(win_prob):
 def run_figure4(win_prob):
     # Figure 4
     array_figure = np.zeros((1000,1000), dtype=np.int_)
-    for i in range(1, 1000):
+    for i in range(0, 1000):
         simulation_results = run_simulation_with_limit(1000, win_prob)
-        array_figure[i-1] = simulation_results
+        array_figure[i] = simulation_results
     mean_value = array_figure.mean(axis=0)
     std_value = array_figure.std(axis=0)
     plt.plot(mean_value, label="Mean value of winning for each spin")
     plt.plot(mean_value + std_value, label="Mean value + standard Deviation")
     plt.plot(mean_value - std_value, label="Mean value - standard Deviation")
     plt.axis([0, 300, -256, 100])
-    plt.title('Figure 4: Mean values for 1000 separate simulations with 1000 bets each with 256 initial amount.')
-    plt.xlabel('Number of Simulations')
-    plt.ylabel('Winnings in $')
-    plt.legend(loc='lower right')
+    plt.title('Figure 4: Mean values for each bet in 1000 simulations with restricted amount.', fontsize=12)
+    plt.xlabel('Number of bets')
+    plt.ylabel('Winnings in $ per round')
+    plt.legend(loc='best', prop={'size': 12})
     plt.grid(True)
     plt.savefig('Figure 4')
     plt.clf()
@@ -67,19 +67,19 @@ def run_figure4(win_prob):
 def run_figure5(win_prob):
     # Figure 5
     array_figure = np.zeros((1000,1000), dtype=np.int_)
-    for i in range(1, 1000):
+    for i in range(0, 1000):
         simulation_results = run_simulation_with_limit(1000, win_prob)
-        array_figure[i-1] = simulation_results
+        array_figure[i] = simulation_results
     median_value = np.median(array_figure, axis=0)
     std_value = array_figure.std(axis=0)
     plt.plot(median_value, label="Median value of winning for each spin")
     plt.plot(median_value + std_value, label="Median value + standard Deviation")
     plt.plot(median_value - std_value, label="Median value - standard Deviation")
     plt.axis([0,300,-256,100])
-    plt.title('Figure 5: Median values for 1000 separate simulations with 1000 bets each with 256 initial amount.')
-    plt.xlabel('Number of Simulations')
-    plt.ylabel('Winnings in $')
-    plt.legend(loc='lower right')
+    plt.title('Figure 5:  Median values for each bet in 1000 simulations with restricted amount.', fontsize=12)
+    plt.xlabel('Number of bets')
+    plt.ylabel('Winnings in $ per round')
+    plt.legend(loc='best', prop={'size': 12})
     plt.grid(True)
     plt.savefig('Figure 5')
     plt.clf()
@@ -95,15 +95,15 @@ def test_code():
 
     # add your code here to implement the experiments
     # Figure 1
-    for i in range(1,10):
+    for i in range(0,10):
         figure_one = run_simulation(1000, win_prob)
-        label = "Run " + str(i)
+        label = "Run " + str(i+1)
         plt.plot(figure_one, label=label)
     plt.axis([0,300,-256,100])
     plt.title('Figure 1: 10 separate simulations with 1000 bets')
-    plt.xlabel('Number of Simulations')
-    plt.ylabel('Winnings in $')
-    plt.legend(loc='lower right')
+    plt.xlabel('Number of bets')
+    plt.ylabel('Winnings in $ per round')
+    plt.legend(loc='best', prop={'size': 12})
     plt.grid(True)
     plt.savefig('Figure 1')
     plt.clf()
@@ -112,19 +112,19 @@ def test_code():
 
     # Figure 2
     array = np.zeros((1000,1000), dtype=np.int_)
-    for i in range(1, 1000):
+    for i in range(0, 1000):
         simulation_results = run_simulation(1000, win_prob)
-        array[i-1] = simulation_results
+        array[i] = simulation_results
     mean_value = array.mean(axis=0)
     std_value = array.std(axis=0)
-    plt.plot(mean_value, label="Mean value of winning for each spin")
+    plt.plot(mean_value, label="Mean value of winnings for each spin")
     plt.plot(mean_value + std_value, label="Mean value + standard Deviation")
     plt.plot(mean_value - std_value, label="Mean value - standard Deviation")
     plt.axis([0,300,-256,100])
-    plt.title('Figure 2: Mean values for 1000 separate simulations with 1000 bets each')
-    plt.xlabel('Number of Simulations')
-    plt.ylabel('Winnings in $')
-    plt.legend(loc='lower right')
+    plt.title('Figure 2: Mean values for each bet in 1000 simulations')
+    plt.xlabel('Number of bets')
+    plt.ylabel('Winnings in $ per round')
+    plt.legend(loc='best', prop={'size': 12})
     plt.grid(True)
     plt.savefig('Figure 2')
     plt.clf()
@@ -133,19 +133,19 @@ def test_code():
 
     # Figure 3
     array_figure3 = np.zeros((1000,1000), dtype=np.int_)
-    for i in range(1, 1000):
+    for i in range(0, 1000):
         simulation_results = run_simulation(1000, win_prob)
-        array_figure3[i-1] = simulation_results
+        array_figure3[i] = simulation_results
     median_value = np.median(array_figure3, axis=0)
     std_value_3 = array_figure3.std(axis=0)
     plt.plot(median_value, label="Median value of winning for each spin")
     plt.plot(median_value + std_value_3, label="Median value + standard Deviation")
     plt.plot(median_value - std_value_3, label="Median value - standard Deviation")
     plt.axis([0,300,-256,100])
-    plt.title('Figure 3: Median values for 1000 separate simulations with 1000 bets each')
-    plt.xlabel('Number of Simulations')
-    plt.ylabel('Winnings in $')
-    plt.legend(loc='lower right')
+    plt.title('Figure 3: Median values for each bet in 1000 simulations')
+    plt.xlabel('Number of bets')
+    plt.ylabel('Winnings in $ per round')
+    plt.legend(loc='best', prop={'size': 12})
     plt.grid(True)
     plt.savefig('Figure 3')
     plt.clf()

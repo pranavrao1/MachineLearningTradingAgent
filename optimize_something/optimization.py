@@ -29,7 +29,8 @@ GT ID: 903205913 (replace with your GT ID)
 import pandas as pd  		   	  			    		  		  		    	 		 		   		 		  
 import matplotlib.pyplot as plt  		   	  			    		  		  		    	 		 		   		 		  
 import numpy as np  		   	  			    		  		  		    	 		 		   		 		  
-import datetime as dt  		   	  			    		  		  		    	 		 		   		 		  
+import datetime as dt
+import scipy.optimize as spo
 from util import get_data, plot_data  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
 # This is the function that will be tested by the autograder  		   	  			    		  		  		    	 		 		   		 		  
@@ -44,8 +45,7 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
     prices_SPY = prices_all['SPY']  # only SPY, for comparison later  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
     # find the allocations for the optimal portfolio  		   	  			    		  		  		    	 		 		   		 		  
-    # note that the values here ARE NOT meant to be correct for a test case  		   	  			    		  		  		    	 		 		   		 		  
-    #allocs = np.asarray([0.2, 0.2, 0.3, 0.3]) # add code here to find the allocations
+    # note that the values here ARE NOT meant to be correct for a test case
 
     number_of_stocks = len(syms)
     allocs = np.full(number_of_stocks, 1/float(number_of_stocks), dtype=np.float_)
@@ -53,45 +53,67 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
     prices.fillna(method="bfill", inplace=True)
     prices_SPY.fillna(method="ffill", inplace=True)
     prices_SPY.fillna(method="bfill", inplace=True)
-    cr, adr, sddr, sr = compute_assesment(sd,ed,prices,prices_SPY, allocs, syms)
 
-    cr, adr, sddr, sr = [0.25, 0.001, 0.0005, 2.1] # add code here to compute stats  		   	  			    		  		  		    	 		 		   		 		  
-  		   	  			    		  		  		    	 		 		   		 		  
+    def optimization_method(allocs):
+        cr_inner, adr_inner, sddr_inner, sr_inner = compute_assesment(prices, allocs, syms)
+        return -1 * sr_inner
+
+    bounds = [(0, 1)]*number_of_stocks
+    max_results = spo.minimize(optimization_method, allocs, method='SLSQP', options={'disp':True}, bounds=bounds,
+                               constraints=({'type': 'eq', 'fun': lambda x: 1 - np.sum(x)}))
+    allocs = np.round(max_results.x, decimals=2)
+    cr, adr, sddr, sr = compute_assesment(prices, allocs, syms)
     # Get daily portfolio value  		   	  			    		  		  		    	 		 		   		 		  
-    port_val = prices_SPY # add code here to compute daily portfolio values  		   	  			    		  		  		    	 		 		   		 		  
+    port_val = compute_portfolio_value_daily(allocs, prices, syms)/1000000
   		   	  			    		  		  		    	 		 		   		 		  
     # Compare daily portfolio value with SPY using a normalized plot  		   	  			    		  		  		    	 		 		   		 		  
     if gen_plot:  		   	  			    		  		  		    	 		 		   		 		  
-        # add code to plot here  		   	  			    		  		  		    	 		 		   		 		  
-        df_temp = pd.concat([port_val, prices_SPY], keys=['Portfolio', 'SPY'], axis=1)  		   	  			    		  		  		    	 		 		   		 		  
-        pass  		   	  			    		  		  		    	 		 		   		 		  
+        # add code to plot here
+        port_val_spy = compute_portfolio_spy_daily(prices_SPY)
+        df_temp = pd.concat([port_val, port_val_spy], keys=['Portfolio', 'SPY'], axis=1)
+        print df_temp
+        plt.figure()
+        df_temp.plot()
+        plt.legend(loc="best")
+        plt.grid(True)
+        plt.title('Daily Portfolio Value and SPY', fontsize=12)
+        plt.ylabel('Price')
+        plt.xlabel('Date')
+        plt.savefig('Daily Portfolio Value')
+        plt.clf()
+        plt.cla()
+        plt.close()
   		   	  			    		  		  		    	 		 		   		 		  
     return allocs, cr, adr, sddr, sr
 
-def compute_assesment(start_date, end_date, prices, prices_SPY, allocs_initial, syms):
-    normalized_prices = prices/prices.iloc[0]
-
-    ## Multiply allocation
-    allocated_prices = normalized_prices.copy(deep=True)
-    portfolio_prices = normalized_prices.copy(deep=True)
-    for i in range(allocs_initial.size):
-        allocated_prices[syms[i]] = normalized_prices[syms[i]]*allocs_initial[i]
-        portfolio_prices[syms[i]] = allocated_prices[syms[i]]*1000000
-    portfolio_value_daily = portfolio_prices.sum(axis=1)
+def compute_assesment(prices, allocs_initial, syms):
+    portfolio_value_daily = compute_portfolio_value_daily(allocs_initial, prices, syms)
     daily_returns = (portfolio_value_daily[1:]/portfolio_value_daily[:-1].values) - 1
     cr = (portfolio_value_daily[-1] / portfolio_value_daily[0]) - 1
     adr = daily_returns.mean()
     sddr = daily_returns.std()
-    print "Cumulative Return " + str(cr)
-    print "Average Daily Return " + str(adr)
-    print "Standard Deviation of daily return " + str(sddr)
     delta_returns_diff = np.subtract(daily_returns, 0)
     sr = np.multiply(np.sqrt(252),np.divide(delta_returns_diff.mean(),sddr))
-    print "Shortie Ratio " + str(sr)
-
     return cr, adr, sddr, sr
 
-  		   	  			    		  		  		    	 		 		   		 		  
+
+def compute_portfolio_value_daily(allocs_initial, prices, syms):
+    normalized_prices = prices / prices.iloc[0]
+    ## Multiply allocation
+    allocated_prices = normalized_prices.copy(deep=True)
+    portfolio_prices = normalized_prices.copy(deep=True)
+    for i in range(allocs_initial.size):
+        allocated_prices[syms[i]] = normalized_prices[syms[i]] * allocs_initial[i]
+        portfolio_prices[syms[i]] = allocated_prices[syms[i]] * 1000000
+    portfolio_value_daily = portfolio_prices.sum(axis=1)
+    return portfolio_value_daily
+
+def compute_portfolio_spy_daily(prices_SPY):
+    ### Calculate values
+    normalized_prices_spy = prices_SPY / prices_SPY.iloc[0]
+    return normalized_prices_spy
+
+
 def test_code():  		   	  			    		  		  		    	 		 		   		 		  
     # This function WILL NOT be called by the auto grader  		   	  			    		  		  		    	 		 		   		 		  
     # Do not assume that any variables defined here are available to your function/code  		   	  			    		  		  		    	 		 		   		 		  
@@ -108,7 +130,7 @@ def test_code():
     # Assess the portfolio  		   	  			    		  		  		    	 		 		   		 		  
     allocations, cr, adr, sddr, sr = optimize_portfolio(sd = start_date, ed = end_date,\
         syms = symbols, \
-        gen_plot = False)  		   	  			    		  		  		    	 		 		   		 		  
+        gen_plot = True)
   		   	  			    		  		  		    	 		 		   		 		  
     # Print statistics  		   	  			    		  		  		    	 		 		   		 		  
     print "Start Date:", start_date  		   	  			    		  		  		    	 		 		   		 		  

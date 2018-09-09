@@ -20,9 +20,9 @@ GT honor code violation.
   		   	  			    		  		  		    	 		 		   		 		  
 -----do not edit anything above this line---  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
-Student Name: Tucker Balch (replace with your name)  		   	  			    		  		  		    	 		 		   		 		  
-GT User ID: tb34 (replace with your User ID)  		   	  			    		  		  		    	 		 		   		 		  
-GT ID: 900897987 (replace with your GT ID)  		   	  			    		  		  		    	 		 		   		 		  
+Student Name: Pranav Pradeep Rao (replace with your name)
+GT User ID: prao43 (replace with your User ID)
+GT ID: 903205913 (replace with your GT ID)
 """  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
@@ -45,7 +45,16 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
   		   	  			    		  		  		    	 		 		   		 		  
     # find the allocations for the optimal portfolio  		   	  			    		  		  		    	 		 		   		 		  
     # note that the values here ARE NOT meant to be correct for a test case  		   	  			    		  		  		    	 		 		   		 		  
-    allocs = np.asarray([0.2, 0.2, 0.3, 0.3]) # add code here to find the allocations  		   	  			    		  		  		    	 		 		   		 		  
+    #allocs = np.asarray([0.2, 0.2, 0.3, 0.3]) # add code here to find the allocations
+
+    number_of_stocks = len(syms)
+    allocs = np.full(number_of_stocks, 1/float(number_of_stocks), dtype=np.float_)
+    prices.fillna(method="ffill", inplace=True)
+    prices.fillna(method="bfill", inplace=True)
+    prices_SPY.fillna(method="ffill", inplace=True)
+    prices_SPY.fillna(method="bfill", inplace=True)
+    cr, adr, sddr, sr = compute_assesment(sd,ed,prices,prices_SPY, allocs, syms)
+
     cr, adr, sddr, sr = [0.25, 0.001, 0.0005, 2.1] # add code here to compute stats  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
     # Get daily portfolio value  		   	  			    		  		  		    	 		 		   		 		  
@@ -57,7 +66,31 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
         df_temp = pd.concat([port_val, prices_SPY], keys=['Portfolio', 'SPY'], axis=1)  		   	  			    		  		  		    	 		 		   		 		  
         pass  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
-    return allocs, cr, adr, sddr, sr  		   	  			    		  		  		    	 		 		   		 		  
+    return allocs, cr, adr, sddr, sr
+
+def compute_assesment(start_date, end_date, prices, prices_SPY, allocs_initial, syms):
+    normalized_prices = prices/prices.iloc[0]
+
+    ## Multiply allocation
+    allocated_prices = normalized_prices.copy(deep=True)
+    portfolio_prices = normalized_prices.copy(deep=True)
+    for i in range(allocs_initial.size):
+        allocated_prices[syms[i]] = normalized_prices[syms[i]]*allocs_initial[i]
+        portfolio_prices[syms[i]] = allocated_prices[syms[i]]*1000000
+    portfolio_value_daily = portfolio_prices.sum(axis=1)
+    daily_returns = (portfolio_value_daily[1:]/portfolio_value_daily[:-1].values) - 1
+    cr = (portfolio_value_daily[-1] / portfolio_value_daily[0]) - 1
+    adr = daily_returns.mean()
+    sddr = daily_returns.std()
+    print "Cumulative Return " + str(cr)
+    print "Average Daily Return " + str(adr)
+    print "Standard Deviation of daily return " + str(sddr)
+    delta_returns_diff = np.subtract(daily_returns, 0)
+    sr = np.multiply(np.sqrt(252),np.divide(delta_returns_diff.mean(),sddr))
+    print "Shortie Ratio " + str(sr)
+
+    return cr, adr, sddr, sr
+
   		   	  			    		  		  		    	 		 		   		 		  
 def test_code():  		   	  			    		  		  		    	 		 		   		 		  
     # This function WILL NOT be called by the auto grader  		   	  			    		  		  		    	 		 		   		 		  

@@ -46,7 +46,7 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
   		   	  			    		  		  		    	 		 		   		 		  
     # find the allocations for the optimal portfolio  		   	  			    		  		  		    	 		 		   		 		  
     # note that the values here ARE NOT meant to be correct for a test case
-
+    pd.set_option('chained_assignment', None)
     number_of_stocks = len(syms)
     allocs = np.full(number_of_stocks, 1/float(number_of_stocks), dtype=np.float_)
     prices.fillna(method="ffill", inplace=True)

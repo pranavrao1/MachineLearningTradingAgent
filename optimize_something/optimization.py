@@ -61,7 +61,7 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
     bounds = [(0, 1)]*number_of_stocks
     max_results = spo.minimize(optimization_method, allocs, method='SLSQP', options={'disp':True}, bounds=bounds,
                                constraints=({'type': 'eq', 'fun': lambda x: 1 - np.sum(x)}))
-    allocs = np.round(max_results.x, decimals=2)
+    allocs = max_results.x
     cr, adr, sddr, sr = compute_assesment(prices, allocs, syms)
     # Get daily portfolio value  		   	  			    		  		  		    	 		 		   		 		  
     port_val = compute_portfolio_value_daily(allocs, prices, syms)/1000000
@@ -71,7 +71,6 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
         # add code to plot here
         port_val_spy = compute_portfolio_spy_daily(prices_SPY)
         df_temp = pd.concat([port_val, port_val_spy], keys=['Portfolio', 'SPY'], axis=1)
-        print df_temp
         plt.figure()
         df_temp.plot()
         plt.legend(loc="best")

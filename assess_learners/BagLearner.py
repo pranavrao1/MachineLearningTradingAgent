@@ -23,12 +23,55 @@ GT honor code violation.
 """
 
 import numpy as np
-
+import DTLearner as dt
+import RTLearner as rt
+import LinRegLearner as lrl
 
 class BagLearner(object):
 
-    def __init__(self, learner=il_cobj,kwargs={'verbose':False},bags=20,boost=False,verbose=False):
-        pass  # move along, these aren't the drones you're looking for
+    def __init__(self, learner,kwargs={'verbose':False},bags=20,boost=False,verbose=False):
+        self.learner = learner
+        self.kwags = kwargs
+        self.bags = bags
+        self.boost = boost
+        self.verbose = verbose
+        list_of_learners = []
+        for i in range(bags):
+            if learner == dt.DTLearner:
+                verbose_assign = False
+                leaf_size_assign = 1
+                if 'verbose' in kwargs.keys():
+                    verbose_assign = kwargs.get('verbose')
+                    pass
+                if 'leaf_size' in kwargs.keys():
+                    leaf_size_assign = kwargs.get('leaf_size')
+                    pass
+                new_learner = dt.DTLearner(leaf_size_assign, verbose_assign)
+                list_of_learners.append(new_learner)
+            elif learner == rt.RTLearner:
+                verbose_assign = False
+                leaf_size_assign = 1
+                if 'verbose' in kwargs.keys():
+                    verbose_assign = kwargs.get('verbose')
+                    pass
+                if 'leaf_size' in kwargs.keys():
+                    leaf_size_assign = kwargs.get('leaf_size')
+                    pass
+                new_learner = rt.RTLearner(leaf_size_assign, verbose_assign)
+                list_of_learners.append(new_learner)
+            elif learner == lrl.LinRegLearner:
+                verbose_assign = False
+                if 'verbose' in kwargs.keys():
+                    verbose_assign = kwargs.get('verbose')
+                    pass
+                new_learner = lrl.LinRegLearner(verbose_assign)
+                list_of_learners.append(new_learner)
+            elif learner == BagLearner:
+                new_learner = BagLearner(learner, kwargs, bags, boost, verbose)
+                list_of_learners.append(new_learner)
+        self.list_of_learners = list_of_learners
+
+
 
     def author(self):
         return 'prao43'  # replace tb34 with your Georgia Tech username
@@ -39,7 +82,8 @@ class BagLearner(object):
         @param dataX: X values of data to add
         @param dataY: the Y training values
         """
-        pass
+        for learner in self.list_of_learners:
+            learner.addEvidence(dataX, dataY)
 
     def query(self, points):
         """
@@ -47,7 +91,15 @@ class BagLearner(object):
         @param points: should be a numpy array with each row corresponding to a specific query.
         @returns the estimated values according to the saved model.
         """
-        pass
+        number_of_rows = points.shape[0]
+        number_of_columns = len(self.list_of_learners)
+        results = np.full((number_of_columns, number_of_rows), -1, dtype='float_')
+        counter = 0
+        for learner in self.list_of_learners:
+            result_temp = learner.query(points)
+            results[counter] = result_temp
+            counter = counter + 1
+        return np.mean(results, axis=0)
 
 
 if __name__ == "__main__":

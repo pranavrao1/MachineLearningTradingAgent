@@ -154,81 +154,81 @@ learning_test_cases = [
             )  		   	  			    		  		  		    	 		 		   		 		  
         ),  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
-    #  ######################
-    #  # Bagging test cases #
-    #  ######################
-    #  LearningTestCase(
-    #     description="Test Case 01: Bagging",
-    #     group='BagLearner',
-    #     datafile='Istanbul.csv',
-    #     seed=1481090001,
-    #     outputs=None
-    #     ),
-    #  LearningTestCase(
-    #     description="Test Case 02: Bagging",
-    #     group='BagLearner',
-    #     datafile='Istanbul.csv',
-    #     seed=1481090002,
-    #     outputs=None
-    #     ),
-    #  LearningTestCase(
-    #     description="Test Case 03: Bagging",
-    #     group='BagLearner',
-    #     datafile='Istanbul.csv',
-    #     seed=1481090003,
-    #     outputs=None
-    #     ),
-    #  LearningTestCase(
-    #     description="Test Case 04: Bagging",
-    #     group='BagLearner',
-    #     datafile='Istanbul.csv',
-    #     seed=1481090004,
-    #     outputs=None
-    #     ),
-    #  LearningTestCase(
-    #     description="Test Case 05: Bagging",
-    #     group='BagLearner',
-    #     datafile='Istanbul.csv',
-    #     seed=1481090005,
-    #     outputs=None
-    #     ),
-    #  LearningTestCase(
-    #     description="Test Case 06: Bagging",
-    #     group='BagLearner',
-    #     datafile='Istanbul.csv',
-    #     seed=1481090006,
-    #     outputs=None
-    #     ),
-    #  LearningTestCase(
-    #      description="Test Case 07: Bagging",
-    #      group='BagLearner',
-    #      datafile='Istanbul.csv',
-    #      seed=1481090007,
-    #      outputs=None
-    #      ),
-    #  LearningTestCase(
-    #      description="Test Case 08: Bagging",
-    #      group='BagLearner',
-    #      datafile='Istanbul.csv',
-    #      seed=1481090008,
-    #      outputs=None
-    #      ),
-    # ##############################
-    # # RandomName + InsaneLearner #
-    # ##############################
-    # LearningTestCase(
-    #     description="InsaneLearner Test Case",
-    #     group='InsaneLearner',
-    #     datafile='simple.csv',
-    #     seed=1498076428,
-    #     outputs=None,
-    #     ),
-    # LearningTestCase(
-    #     description="Random Classname Test Case",
-    #     group='RandomName',
-    #     datafile='simple.csv',
-    #     seed=1498076428,
-    #     outputs=None),
+     ######################
+     # Bagging test cases #
+     ######################
+     LearningTestCase(
+        description="Test Case 01: Bagging",
+        group='BagLearner',
+        datafile='Istanbul.csv',
+        seed=1481090001,
+        outputs=None
+        ),
+     LearningTestCase(
+        description="Test Case 02: Bagging",
+        group='BagLearner',
+        datafile='Istanbul.csv',
+        seed=1481090002,
+        outputs=None
+        ),
+     LearningTestCase(
+        description="Test Case 03: Bagging",
+        group='BagLearner',
+        datafile='Istanbul.csv',
+        seed=1481090003,
+        outputs=None
+        ),
+     LearningTestCase(
+        description="Test Case 04: Bagging",
+        group='BagLearner',
+        datafile='Istanbul.csv',
+        seed=1481090004,
+        outputs=None
+        ),
+     LearningTestCase(
+        description="Test Case 05: Bagging",
+        group='BagLearner',
+        datafile='Istanbul.csv',
+        seed=1481090005,
+        outputs=None
+        ),
+     LearningTestCase(
+        description="Test Case 06: Bagging",
+        group='BagLearner',
+        datafile='Istanbul.csv',
+        seed=1481090006,
+        outputs=None
+        ),
+     LearningTestCase(
+         description="Test Case 07: Bagging",
+         group='BagLearner',
+         datafile='Istanbul.csv',
+         seed=1481090007,
+         outputs=None
+         ),
+     LearningTestCase(
+         description="Test Case 08: Bagging",
+         group='BagLearner',
+         datafile='Istanbul.csv',
+         seed=1481090008,
+         outputs=None
+         ),
+    ##############################
+    # RandomName + InsaneLearner #
+    ##############################
+    LearningTestCase(
+        description="InsaneLearner Test Case",
+        group='InsaneLearner',
+        datafile='simple.csv',
+        seed=1498076428,
+        outputs=None,
+        ),
+    LearningTestCase(
+        description="Random Classname Test Case",
+        group='RandomName',
+        datafile='simple.csv',
+        seed=1498076428,
+        outputs=None),
 ]  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  

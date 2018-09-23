@@ -27,6 +27,8 @@ import numpy as np
 class DTLearner(object):
   		   	  			    		  		  		    	 		 		   		 		  
     def __init__(self, leaf_size=1, verbose = False):
+        self.leaf_size = leaf_size
+        self.verbose = verbose
         pass # move along, these aren't the drones you're looking for  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
     def author(self):  		   	  			    		  		  		    	 		 		   		 		  
@@ -48,8 +50,13 @@ class DTLearner(object):
         # build and save the model
 
     def build_tree(self, data):
+        # print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        # print "dataIN"
+        # print data
+        # print
+        # "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
         number_of_columns = data.shape[1]
-        max_corelation = 0
+        max_corelation = -1
         best_corelation_index = -1
         for i in range(number_of_columns-1):
             correlate = np.correlate(data[:,i],data[:,-1])
@@ -61,24 +68,38 @@ class DTLearner(object):
             return np.array([[-1, data[:,-1], -1, -1]])
         elif np.unique(data[:, -1]).size == 1:
             return np.array([[-1, data[0,-1], -1, -1]])
+        elif (data.shape[0] <= self.leaf_size):
+            return self.create_new_leaf(data)
         else:
             split_value = np.median(data[:,best_corelation_index])
-            left_tree = self.build_tree(data[data[:, best_corelation_index] <= split_value])
-            right_tree = self.build_tree(data[data[:, best_corelation_index] > split_value])
+
+            less_than_split = data[data[:, best_corelation_index] <= split_value]
+            greater_than_split = data[data[:, best_corelation_index] > split_value]
+            # Ensure that split is not all to one side.
+            min_value = np.amin(data[:, best_corelation_index])
+            max_value = np.amax(data[:, best_corelation_index])
+            if split_value == min_value or split_value == max_value:
+                return self.create_new_leaf(data)
+            left_tree = self.build_tree(less_than_split)
+            right_tree = self.build_tree(greater_than_split)
             root = np.array([best_corelation_index, split_value, 1, left_tree.shape[0] + 1])
             result_1 = np.vstack((root, left_tree))
             final = np.vstack((result_1, right_tree))
             return final
 
-  		   	  			    		  		  		    	 		 		   		 		  
-    def query(self,points):  		   	  			    		  		  		    	 		 		   		 		  
+    def create_new_leaf(self, data):
+        mean_value = np.mean(data[:, -1])
+        return np.array([[-1, mean_value, -1, -1]])
+
+    def query(self,points):
         """  		   	  			    		  		  		    	 		 		   		 		  
         @summary: Estimate a set of test points given the model we built.  		   	  			    		  		  		    	 		 		   		 		  
         @param points: should be a numpy array with each row corresponding to a specific query.  		   	  			    		  		  		    	 		 		   		 		  
         @returns the estimated values according to the saved model.  		   	  			    		  		  		    	 		 		   		 		  
         """
 
-        result = np.full((points.shape[0], 1), -1)
+        result = np.empty(points.shape[0])
+        result.fill(-1)
         tree = self.tree
         i = 0
         for entry in points:
@@ -98,7 +119,7 @@ class DTLearner(object):
             next_index = index + left
             next_node = tree[int(next_index)]
             return self.result_single_node(row, next_node, next_index)
-        else: 
+        else:
             tree = self.tree
             right = node[3]
             next_index = index + right

@@ -25,9 +25,9 @@ GT honor code violation.
 import numpy as np
 
 
-class RTLearner(object):
+class BagLearner(object):
 
-    def __init__(self, verbose=False):
+    def __init__(self, learner=il_cobj,kwargs={'verbose':False},bags=20,boost=False,verbose=False):
         pass  # move along, these aren't the drones you're looking for
 
     def author(self):

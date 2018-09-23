@@ -35,7 +35,8 @@ if __name__=="__main__":
     inf = open(sys.argv[1])  		   	  			    		  		  		    	 		 		   		 		  
     data = np.array([map(float,s.strip().split(',')) for s in inf.readlines()])  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
-    # compute how much of the data is training and testing  		   	  			    		  		  		    	 		 		   		 		  
+    # compute how much of the data is training and testing
+    np.random.shuffle(data)
     train_rows = int(0.6* data.shape[0])  		   	  			    		  		  		    	 		 		   		 		  
     test_rows = data.shape[0] - train_rows  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
@@ -43,10 +44,7 @@ if __name__=="__main__":
     trainX = data[:train_rows,0:-1]  		   	  			    		  		  		    	 		 		   		 		  
     trainY = data[:train_rows,-1]  		   	  			    		  		  		    	 		 		   		 		  
     testX = data[train_rows:,0:-1]  		   	  			    		  		  		    	 		 		   		 		  
-    testY = data[train_rows:,-1]  		   	  			    		  		  		    	 		 		   		 		  
-  		   	  			    		  		  		    	 		 		   		 		  
-    print testX
-    print testY
+    testY = data[train_rows:,-1]
   		   	  			    		  		  		    	 		 		   		 		  
     # create a learner and train it  		   	  			    		  		  		    	 		 		   		 		  
     # learner = lrl.LinRegLearner(verbose = True) # create a LinRegLearner
@@ -54,22 +52,21 @@ if __name__=="__main__":
     # print learner.author()
     learner = dt.DTLearner(leaf_size=1, verbose=False)  # constructor
     learner.addEvidence(trainX, trainY)  # training step
-    Y = learner.query(trainX)  # query
   		   	  			    		  		  		    	 		 		   		 		  
     # # evaluate in sample
-    # predY = learner.query(trainX) # get the predictions
-    # rmse = math.sqrt(((trainY - predY) ** 2).sum()/trainY.shape[0])
-    # print
-    # print "In sample results"
-    # print "RMSE: ", rmse
-    # c = np.corrcoef(predY, y=trainY)
-    # print "corr: ", c[0,1]
-  	#
-    # # evaluate out of sample
-    # predY = learner.query(testX) # get the predictions
-    # rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
-    # print
-    # print "Out of sample results"
-    # print "RMSE: ", rmse
-    # c = np.corrcoef(predY, y=testY)
-    # print "corr: ", c[0,1]
+    predY = learner.query(trainX) # get the predictions
+    rmse = math.sqrt(((trainY - predY) ** 2).sum()/trainY.shape[0])
+    print
+    print "In sample results"
+    print "RMSE: ", rmse
+    c = np.corrcoef(predY, y=trainY)
+    print "corr: ", c[0,1]
+
+    # evaluate out of sample
+    predY = learner.query(testX) # get the predictions
+    rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
+    print
+    print "Out of sample results"
+    print "RMSE: ", rmse
+    c = np.corrcoef(predY, y=testY)
+    print "corr: ", c[0,1]

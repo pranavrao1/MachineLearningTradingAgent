@@ -24,9 +24,9 @@ GT honor code violation.
   		   	  			    		  		  		    	 		 		   		 		  
 import numpy as np  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
-class LinRegLearner(object):  		   	  			    		  		  		    	 		 		   		 		  
+class DTLearner(object):
   		   	  			    		  		  		    	 		 		   		 		  
-    def __init__(self, verbose = False):  		   	  			    		  		  		    	 		 		   		 		  
+    def __init__(self, leaf_size=1, verbose = False):
         pass # move along, these aren't the drones you're looking for  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
     def author(self):  		   	  			    		  		  		    	 		 		   		 		  
@@ -39,20 +39,46 @@ class LinRegLearner(object):
         @param dataY: the Y training values  		   	  			    		  		  		    	 		 		   		 		  
         """  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
-        # slap on 1s column so linear regression finds a constant term  		   	  			    		  		  		    	 		 		   		 		  
-        newdataX = np.ones([dataX.shape[0],dataX.shape[1]+1])  		   	  			    		  		  		    	 		 		   		 		  
-        newdataX[:,0:dataX.shape[1]]=dataX  		   	  			    		  		  		    	 		 		   		 		  
+        # slap on 1s column so linear regression finds a constant term
+        print dataX.shape
+        print dataY.shape
+        combo_data = np.column_stack((dataX, dataY))
+        print self.build_tree(combo_data)
   		   	  			    		  		  		    	 		 		   		 		  
-        # build and save the model  		   	  			    		  		  		    	 		 		   		 		  
-        self.model_coefs, residuals, rank, s = np.linalg.lstsq(newdataX, dataY)  		   	  			    		  		  		    	 		 		   		 		  
+        # build and save the model
+
+    def build_tree(self, data):
+        number_of_columns = data.shape[1]
+        max_corelation = 0
+        best_corelation_index = -1
+        for i in range(number_of_columns-1):
+            correlate = np.correlate(data[:,i],data[:,-1])
+            if (correlate > max_corelation):
+                max_corelation = correlate
+                best_corelation_index = i
+
+        if (data.shape[0] == 1):
+            return np.array([[-1, data[:,-1], -1, -1]])
+        elif np.unique(data[:, -1]).size == 1:
+            return np.array([[-1, data[0,-1], -1, -1]])
+        else:
+            split_value = np.median(data[:,best_corelation_index])
+            left_tree = self.build_tree(data[data[:, best_corelation_index] <= split_value])
+            right_tree = self.build_tree(data[data[:, best_corelation_index] > split_value])
+            root = np.array([best_corelation_index, split_value, 1, left_tree.shape[0] + 1])
+            result_1 = np.vstack((root, left_tree))
+            final = np.vstack((result_1, right_tree))
+            return final
+
   		   	  			    		  		  		    	 		 		   		 		  
     def query(self,points):  		   	  			    		  		  		    	 		 		   		 		  
         """  		   	  			    		  		  		    	 		 		   		 		  
         @summary: Estimate a set of test points given the model we built.  		   	  			    		  		  		    	 		 		   		 		  
         @param points: should be a numpy array with each row corresponding to a specific query.  		   	  			    		  		  		    	 		 		   		 		  
         @returns the estimated values according to the saved model.  		   	  			    		  		  		    	 		 		   		 		  
-        """  		   	  			    		  		  		    	 		 		   		 		  
-        return (self.model_coefs[:-1] * points).sum(axis = 1) + self.model_coefs[-1]  		   	  			    		  		  		    	 		 		   		 		  
+        """
+        result = np.full(())
+        pass
   		   	  			    		  		  		    	 		 		   		 		  
 if __name__=="__main__":  		   	  			    		  		  		    	 		 		   		 		  
     print "the secret clue is 'zzyzx'"  		   	  			    		  		  		    	 		 		   		 		  

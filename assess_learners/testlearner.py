@@ -24,7 +24,8 @@ GT honor code violation.
   		   	  			    		  		  		    	 		 		   		 		  
 import numpy as np  		   	  			    		  		  		    	 		 		   		 		  
 import math  		   	  			    		  		  		    	 		 		   		 		  
-import LinRegLearner as lrl  		   	  			    		  		  		    	 		 		   		 		  
+import LinRegLearner as lrl
+import DTLearner as dt
 import sys  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
 if __name__=="__main__":  		   	  			    		  		  		    	 		 		   		 		  
@@ -44,28 +45,31 @@ if __name__=="__main__":
     testX = data[train_rows:,0:-1]  		   	  			    		  		  		    	 		 		   		 		  
     testY = data[train_rows:,-1]  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
-    print testX.shape  		   	  			    		  		  		    	 		 		   		 		  
-    print testY.shape  		   	  			    		  		  		    	 		 		   		 		  
+    print testX
+    print testY
   		   	  			    		  		  		    	 		 		   		 		  
     # create a learner and train it  		   	  			    		  		  		    	 		 		   		 		  
-    learner = lrl.LinRegLearner(verbose = True) # create a LinRegLearner  		   	  			    		  		  		    	 		 		   		 		  
-    learner.addEvidence(trainX, trainY) # train it  		   	  			    		  		  		    	 		 		   		 		  
-    print learner.author()  		   	  			    		  		  		    	 		 		   		 		  
+    # learner = lrl.LinRegLearner(verbose = True) # create a LinRegLearner
+    # learner.addEvidence(trainX, trainY) # train it
+    # print learner.author()
+    learner = dt.DTLearner(leaf_size=1, verbose=False)  # constructor
+    learner.addEvidence(trainX, trainY)  # training step
+    Y = learner.query(trainX)  # query
   		   	  			    		  		  		    	 		 		   		 		  
-    # evaluate in sample  		   	  			    		  		  		    	 		 		   		 		  
-    predY = learner.query(trainX) # get the predictions  		   	  			    		  		  		    	 		 		   		 		  
-    rmse = math.sqrt(((trainY - predY) ** 2).sum()/trainY.shape[0])  		   	  			    		  		  		    	 		 		   		 		  
-    print  		   	  			    		  		  		    	 		 		   		 		  
-    print "In sample results"  		   	  			    		  		  		    	 		 		   		 		  
-    print "RMSE: ", rmse  		   	  			    		  		  		    	 		 		   		 		  
-    c = np.corrcoef(predY, y=trainY)  		   	  			    		  		  		    	 		 		   		 		  
-    print "corr: ", c[0,1]  		   	  			    		  		  		    	 		 		   		 		  
-  		   	  			    		  		  		    	 		 		   		 		  
-    # evaluate out of sample  		   	  			    		  		  		    	 		 		   		 		  
-    predY = learner.query(testX) # get the predictions  		   	  			    		  		  		    	 		 		   		 		  
-    rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])  		   	  			    		  		  		    	 		 		   		 		  
-    print  		   	  			    		  		  		    	 		 		   		 		  
-    print "Out of sample results"  		   	  			    		  		  		    	 		 		   		 		  
-    print "RMSE: ", rmse  		   	  			    		  		  		    	 		 		   		 		  
-    c = np.corrcoef(predY, y=testY)  		   	  			    		  		  		    	 		 		   		 		  
-    print "corr: ", c[0,1]  		   	  			    		  		  		    	 		 		   		 		  
+    # # evaluate in sample
+    # predY = learner.query(trainX) # get the predictions
+    # rmse = math.sqrt(((trainY - predY) ** 2).sum()/trainY.shape[0])
+    # print
+    # print "In sample results"
+    # print "RMSE: ", rmse
+    # c = np.corrcoef(predY, y=trainY)
+    # print "corr: ", c[0,1]
+  	#
+    # # evaluate out of sample
+    # predY = learner.query(testX) # get the predictions
+    # rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
+    # print
+    # print "Out of sample results"
+    # print "RMSE: ", rmse
+    # c = np.corrcoef(predY, y=testY)
+    # print "corr: ", c[0,1]

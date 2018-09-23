@@ -43,7 +43,7 @@ class DTLearner(object):
         print dataX.shape
         print dataY.shape
         combo_data = np.column_stack((dataX, dataY))
-        print self.build_tree(combo_data)
+        self.tree =  self.build_tree(combo_data)
   		   	  			    		  		  		    	 		 		   		 		  
         # build and save the model
 
@@ -77,8 +77,33 @@ class DTLearner(object):
         @param points: should be a numpy array with each row corresponding to a specific query.  		   	  			    		  		  		    	 		 		   		 		  
         @returns the estimated values according to the saved model.  		   	  			    		  		  		    	 		 		   		 		  
         """
-        result = np.full(())
-        pass
+
+        result = np.full((points.shape[0], 1), -1)
+        tree = self.tree
+        i = 0
+        for entry in points:
+            value = self.result_single_node(entry,tree[0], 0)
+            result[i] = value
+            i = i + 1
+        return result
+
+    def result_single_node(self,row, node, index):
+        factor = node[0]
+        diff = node[1]
+        if factor == -1:
+            return diff
+        elif row[int(factor)] <= diff:
+            tree = self.tree
+            left = node[2]
+            next_index = index + left
+            next_node = tree[int(next_index)]
+            return self.result_single_node(row, next_node, next_index)
+        else: 
+            tree = self.tree
+            right = node[3]
+            next_index = index + right
+            next_node = tree[int(next_index)]
+            return self.result_single_node(row, next_node, next_index)
   		   	  			    		  		  		    	 		 		   		 		  
 if __name__=="__main__":  		   	  			    		  		  		    	 		 		   		 		  
     print "the secret clue is 'zzyzx'"  		   	  			    		  		  		    	 		 		   		 		  

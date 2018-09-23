@@ -2,3 +2,10 @@ README.md
 util.py
 **/data/**
 **/grading/**
+martingale/**
+optimize_something/**
+*.pyc
+.DS_Store
+.cache
+.idea/
+*.txt

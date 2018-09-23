@@ -27,8 +27,9 @@ import numpy as np
 
 class RTLearner(object):
 
-    def __init__(self, verbose=False):
-        pass  # move along, these aren't the drones you're looking for
+    def __init__(self, leaf_size=1, verbose=False):
+        self.leaf_size = leaf_size
+        self.verbose = verbose
 
     def author(self):
         return 'prao43'  # replace tb34 with your Georgia Tech username
@@ -39,7 +40,47 @@ class RTLearner(object):
         @param dataX: X values of data to add
         @param dataY: the Y training values
         """
-        pass
+
+        # slap on 1s column so linear regression finds a constant term
+        print
+        dataX.shape
+        print
+        dataY.shape
+        combo_data = np.column_stack((dataX, dataY))
+        self.tree = self.build_tree(combo_data)
+
+        # build and save the model
+
+    def build_tree(self, data):
+        number_of_columns = data.shape[1]
+        random_correlation_index = np.random.choice(np.arange(number_of_columns-1), 1)[0]
+
+        if data.shape[0] == 1:
+            return np.array([[-1, data[:, -1], -1, -1]])
+        elif np.unique(data[:, -1]).size == 1:
+            return np.array([[-1, data[0, -1], -1, -1]])
+        elif data.shape[0] <= self.leaf_size:
+            return self.create_new_leaf(data)
+        else:
+            split_value = np.median(data[:,random_correlation_index])
+
+            less_than_split = data[data[:, random_correlation_index] <= split_value]
+            greater_than_split = data[data[:, random_correlation_index] > split_value]
+            # Ensure that split is not all to one side.
+            min_value = np.amin(data[:, random_correlation_index])
+            max_value = np.amax(data[:, random_correlation_index])
+            if split_value == min_value or split_value == max_value:
+                return self.create_new_leaf(data)
+            left_tree = self.build_tree(less_than_split)
+            right_tree = self.build_tree(greater_than_split)
+            root = np.array([random_correlation_index, split_value, 1, left_tree.shape[0] + 1])
+            result_1 = np.vstack((root, left_tree))
+            final = np.vstack((result_1, right_tree))
+            return final
+
+    def create_new_leaf(self, data):
+        mean_value = np.mean(data[:, -1])
+        return np.array([[-1, mean_value, -1, -1]])
 
     def query(self, points):
         """
@@ -47,7 +88,34 @@ class RTLearner(object):
         @param points: should be a numpy array with each row corresponding to a specific query.
         @returns the estimated values according to the saved model.
         """
-        pass
+
+        result = np.empty(points.shape[0])
+        result.fill(-1)
+        tree = self.tree
+        i = 0
+        for entry in points:
+            value = self.result_single_node(entry, tree[0], 0)
+            result[i] = value
+            i = i + 1
+        return result
+
+    def result_single_node(self, row, node, index):
+        factor = node[0]
+        diff = node[1]
+        if factor == -1:
+            return diff
+        elif row[int(factor)] <= diff:
+            tree = self.tree
+            left = node[2]
+            next_index = index + left
+            next_node = tree[int(next_index)]
+            return self.result_single_node(row, next_node, next_index)
+        else:
+            tree = self.tree
+            right = node[3]
+            next_index = index + right
+            next_node = tree[int(next_index)]
+            return self.result_single_node(row, next_node, next_index)
 
 
 if __name__ == "__main__":

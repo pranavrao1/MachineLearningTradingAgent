@@ -26,6 +26,7 @@ import numpy as np
 import math  		   	  			    		  		  		    	 		 		   		 		  
 import LinRegLearner as lrl
 import DTLearner as dt
+import RTLearner as rt
 import sys  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
 if __name__=="__main__":  		   	  			    		  		  		    	 		 		   		 		  
@@ -49,8 +50,10 @@ if __name__=="__main__":
     # create a learner and train it  		   	  			    		  		  		    	 		 		   		 		  
     # learner = lrl.LinRegLearner(verbose = True) # create a LinRegLearner
     # learner.addEvidence(trainX, trainY) # train it
-    # print learner.author()
-    learner = dt.DTLearner(leaf_size=1, verbose=False)  # constructor
+    # # print learner.author()
+    # learner = dt.DTLearner(leaf_size=1, verbose=False)  # constructor
+    # learner.addEvidence(trainX, trainY)  # training step
+    learner = rt.RTLearner(leaf_size=1, verbose=False)  # constructor
     learner.addEvidence(trainX, trainY)  # training step
   		   	  			    		  		  		    	 		 		   		 		  
     # # evaluate in sample

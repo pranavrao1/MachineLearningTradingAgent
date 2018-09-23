@@ -29,7 +29,6 @@ class DTLearner(object):
     def __init__(self, leaf_size=1, verbose = False):
         self.leaf_size = leaf_size
         self.verbose = verbose
-        pass # move along, these aren't the drones you're looking for  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
     def author(self):  		   	  			    		  		  		    	 		 		   		 		  
         return 'prao43' # replace tb34 with your Georgia Tech username
@@ -42,47 +41,40 @@ class DTLearner(object):
         """  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
         # slap on 1s column so linear regression finds a constant term
-        print dataX.shape
-        print dataY.shape
         combo_data = np.column_stack((dataX, dataY))
         self.tree =  self.build_tree(combo_data)
   		   	  			    		  		  		    	 		 		   		 		  
         # build and save the model
 
     def build_tree(self, data):
-        # print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        # print "dataIN"
-        # print data
-        # print
-        # "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
         number_of_columns = data.shape[1]
-        max_corelation = -1
-        best_corelation_index = -1
+        max_correlation = -1
+        best_correlation_index = -1
         for i in range(number_of_columns-1):
             correlate = np.correlate(data[:,i],data[:,-1])
-            if (correlate > max_corelation):
-                max_corelation = correlate
-                best_corelation_index = i
+            if correlate > max_correlation:
+                max_correlation = correlate
+                best_correlation_index = i
 
-        if (data.shape[0] == 1):
+        if data.shape[0] == 1:
             return np.array([[-1, data[:,-1], -1, -1]])
         elif np.unique(data[:, -1]).size == 1:
             return np.array([[-1, data[0,-1], -1, -1]])
-        elif (data.shape[0] <= self.leaf_size):
+        elif data.shape[0] <= self.leaf_size:
             return self.create_new_leaf(data)
         else:
-            split_value = np.median(data[:,best_corelation_index])
+            split_value = np.median(data[:,best_correlation_index])
 
-            less_than_split = data[data[:, best_corelation_index] <= split_value]
-            greater_than_split = data[data[:, best_corelation_index] > split_value]
+            less_than_split = data[data[:, best_correlation_index] <= split_value]
+            greater_than_split = data[data[:, best_correlation_index] > split_value]
             # Ensure that split is not all to one side.
-            min_value = np.amin(data[:, best_corelation_index])
-            max_value = np.amax(data[:, best_corelation_index])
+            min_value = np.amin(data[:, best_correlation_index])
+            max_value = np.amax(data[:, best_correlation_index])
             if split_value == min_value or split_value == max_value:
                 return self.create_new_leaf(data)
             left_tree = self.build_tree(less_than_split)
             right_tree = self.build_tree(greater_than_split)
-            root = np.array([best_corelation_index, split_value, 1, left_tree.shape[0] + 1])
+            root = np.array([best_correlation_index, split_value, 1, left_tree.shape[0] + 1])
             result_1 = np.vstack((root, left_tree))
             final = np.vstack((result_1, right_tree))
             return final

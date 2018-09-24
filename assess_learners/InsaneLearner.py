@@ -32,11 +32,9 @@ class InsaneLearner(object):
 
     def __init__(self, verbose=False):
         self.verbose = verbose
-        list_of_learners = []
+        self.list_of_learners = []
         for i in range(20):
-            learner = bl.BagLearner(learner=lrl.LinRegLearner, kwargs={'verbose':self.verbose}, bags=20, boost=False, verbose=False)
-            list_of_learners.append(learner)
-        self.list_of_learners = list_of_learners
+            self.list_of_learners.append(bl.BagLearner(learner=lrl.LinRegLearner, kwargs={'verbose':self.verbose}, bags=20, boost=False, verbose=False))
 
     def author(self):
         return 'prao43'  # replace tb34 with your Georgia Tech username
@@ -65,7 +63,6 @@ class InsaneLearner(object):
             results[counter] = result_temp
             counter = counter + 1
         answer = np.mean(results, axis=0)
-        print answer
         return answer
 
 if __name__ == "__main__":

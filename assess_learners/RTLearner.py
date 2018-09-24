@@ -42,10 +42,6 @@ class RTLearner(object):
         """
 
         # slap on 1s column so linear regression finds a constant term
-        print
-        dataX.shape
-        print
-        dataY.shape
         combo_data = np.column_stack((dataX, dataY))
         self.tree = self.build_tree(combo_data)
 

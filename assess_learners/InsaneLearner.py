@@ -25,10 +25,18 @@ GT honor code violation.
 import numpy as np
 
 
+import BagLearner as bl
+import LinRegLearner as lrl
+
 class InsaneLearner(object):
 
     def __init__(self, verbose=False):
-        pass  # move along, these aren't the drones you're looking for
+        self.verbose = verbose
+        list_of_learners = []
+        for i in range(20):
+            learner = bl.BagLearner(learner=lrl.LinRegLearner, kwargs={'verbose':self.verbose}, bags=20, boost=False, verbose=False)
+            list_of_learners.append(learner)
+        self.list_of_learners = list_of_learners
 
     def author(self):
         return 'prao43'  # replace tb34 with your Georgia Tech username
@@ -39,7 +47,8 @@ class InsaneLearner(object):
         @param dataX: X values of data to add
         @param dataY: the Y training values
         """
-        pass
+        for learner in self.list_of_learners:
+            learner.addEvidence(dataX, dataY)
 
     def query(self, points):
         """
@@ -47,8 +56,17 @@ class InsaneLearner(object):
         @param points: should be a numpy array with each row corresponding to a specific query.
         @returns the estimated values according to the saved model.
         """
-        pass
-
+        number_of_rows = points.shape[0]
+        number_of_columns = len(self.list_of_learners)
+        results = np.full((number_of_columns, number_of_rows), -1, dtype='float_')
+        counter = 0
+        for learner in self.list_of_learners:
+            result_temp = learner.query(points)
+            results[counter] = result_temp
+            counter = counter + 1
+        answer = np.mean(results, axis=0)
+        print answer
+        return  answer
 
 if __name__ == "__main__":
     print

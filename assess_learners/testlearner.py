@@ -28,6 +28,7 @@ import LinRegLearner as lrl
 import DTLearner as dt
 import RTLearner as rt
 import BagLearner as bl
+import InsaneLearner as il
 import sys
 
 
@@ -58,8 +59,18 @@ if __name__=="__main__":
         print "Usage: python testlearner.py <filename>"  		   	  			    		  		  		    	 		 		   		 		  
         sys.exit(1)  		   	  			    		  		  		    	 		 		   		 		  
     inf = open(sys.argv[1])  		   	  			    		  		  		    	 		 		   		 		  
-    data = np.array([map(float,s.strip().split(',')) for s in inf.readlines()])  		   	  			    		  		  		    	 		 		   		 		  
-  		   	  			    		  		  		    	 		 		   		 		  
+    data = np.array([map(float,s.strip().split(',')) for s in inf.readlines()])
+    print "Istanbul"
+    datafile = 'Istanbul.csv'
+    with util.get_learner_data_file(datafile) as f:
+        alldata = np.genfromtxt(f, delimiter=',')
+        # Skip the date column and header row if we're working on Istanbul data
+        if datafile == 'Istanbul.csv':
+            alldata = alldata[1:, 1:]
+    data = alldata[1:, 1:]
+    # print data.shape[0]
+    data = np.random.permutation(data)
+
     # compute how much of the data is training and testing
     np.random.shuffle(data)
     train_rows = int(0.6* data.shape[0])  		   	  			    		  		  		    	 		 		   		 		  
@@ -81,6 +92,9 @@ if __name__=="__main__":
     # learner = rt.RTLearner(leaf_size=1, verbose=False)  # constructor
     # run_learner(learner, trainX, trainY, testX, testY)
 
-    learner = bl.BagLearner(learner=lrl.LinRegLearner, kwargs={}, bags=10, boost=False, verbose=False)
+    # learner = bl.BagLearner(learner=lrl.LinRegLearner, kwargs={}, bags=10, boost=False, verbose=False)
+    # run_learner(learner, trainX, trainY, testX, testY)
+
+    learner = il.InsaneLearner(verbose=False)
     run_learner(learner, trainX, trainY, testX, testY)
 

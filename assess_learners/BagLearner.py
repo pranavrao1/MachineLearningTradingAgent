@@ -69,6 +69,10 @@ class BagLearner(object):
             elif learner == BagLearner:
                 new_learner = BagLearner(learner, kwargs, bags, boost, verbose)
                 list_of_learners.append(new_learner)
+            else:
+                new_learner = learner(**kwargs)
+                list_of_learners.append(new_learner)
+
         self.list_of_learners = list_of_learners
 
 
@@ -82,8 +86,12 @@ class BagLearner(object):
         @param dataX: X values of data to add
         @param dataY: the Y training values
         """
+        number_of_rows = dataX.shape[0]
         for learner in self.list_of_learners:
-            learner.addEvidence(dataX, dataY)
+            random_ids = np.random.choice(number_of_rows, number_of_rows, replace=True)
+            randomized_dataX = dataX[random_ids]
+            randomized_dataY = dataY[random_ids]
+            learner.addEvidence(randomized_dataX, randomized_dataY)
 
     def query(self, points):
         """

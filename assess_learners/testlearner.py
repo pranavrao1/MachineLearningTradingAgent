@@ -32,13 +32,22 @@ import InsaneLearner as il
 import sys
 import util
 import matplotlib.pyplot as plt
+import time
 
 def run_learner(learner, trainX, trainY, testX, testY):
     print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     print learner.author()
+    tree_building_start = time.time()
     learner.addEvidence(trainX, trainY)  # training step
+    tree_building_end = time.time()
+    time.time()
     # # evaluate in sample
     predY = learner.query(trainX)  # get the predictions
+    if hasattr(learner, 'tree'):
+        tree_size = learner.tree.shape[0] * learner.tree.shape[1]
+    else:
+        tree_size = 0
+
     rmse_in = math.sqrt(((trainY - predY) ** 2).sum() / trainY.shape[0])
     print
     print "In sample results"
@@ -55,7 +64,7 @@ def run_learner(learner, trainX, trainY, testX, testY):
     c = np.corrcoef(predY, y=testY)
     print "corr: ", c[0, 1]
     print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-    return rmse_in, rmse_out
+    return rmse_in, rmse_out, tree_size, (tree_building_end - tree_building_start)
 
 
 def generate_plots(datafile = 'Istanbul.csv'):
@@ -78,14 +87,21 @@ def generate_plots(datafile = 'Istanbul.csv'):
     trainY = data[:train_rows, -1]
     testX = data[train_rows:, 0:-1]
     testY = data[train_rows:, -1]
+
     rmses_in = np.empty(100)
     rmses_in.fill(-1)
     rmses_out = np.empty(100)
     rmses_out.fill(-1)
+
+    dt_learner_tree_size = np.empty(100)
+    dt_learner_tree_size.fill(-1)
+    dt_learner_tree_time = np.empty(100)
+    dt_learner_tree_time.fill(-1)
+
     leaf_size = range(100)
     for i in leaf_size:
         learner = dt.DTLearner(leaf_size=i, verbose=False)  # constructor
-        rmses_in[i], rmses_out[i] = run_learner(learner, trainX, trainY, testX, testY)  # training step
+        rmses_in[i], rmses_out[i], dt_learner_tree_size[i], dt_learner_tree_time[i] = run_learner(learner, trainX, trainY, testX, testY)  # training step
     plt.plot(leaf_size, rmses_in, label="In Sample")
     plt.plot(leaf_size, rmses_out, label="Out Sample")
     plt.legend(loc="best")
@@ -97,18 +113,73 @@ def generate_plots(datafile = 'Istanbul.csv'):
     plt.clf()
     plt.cla()
     plt.close()
+
+    rmses_in_2 = np.empty(100)
+    rmses_in_2.fill(-1)
+    rmses_out_2 = np.empty(100)
+    rmses_out_2.fill(-1)
     for i in leaf_size:
         kwargs = {'leaf_size': i}
         learner = bl.BagLearner(learner=dt.DTLearner, kwargs=kwargs, verbose=False, bags=20)  # constructor
-        rmses_in[i], rmses_out[i] = run_learner(learner, trainX, trainY, testX, testY)  # training step
-    plt.plot(leaf_size, rmses_in, label="In Sample")
-    plt.plot(leaf_size, rmses_out, label="Out Sample")
+        rmses_in_2[i], rmses_out_2[i], ignore, ignore_2 = run_learner(learner, trainX, trainY, testX, testY)  # training step
+    plt.plot(leaf_size, rmses_in_2, label="In Sample")
+    plt.plot(leaf_size, rmses_out_2, label="Out Sample")
     plt.legend(loc="best")
     plt.grid(True)
     plt.title('Baglearner at 20 bags overfitting with increasing leaf size.', fontsize=10)
     plt.ylabel('RMSE')
     plt.xlabel('Leaf Size')
     plt.savefig('Baglearner at 20 bags overfitting with increasing leaf size.')
+    plt.clf()
+    plt.cla()
+    plt.close()
+
+    rmses_in_3 = np.empty(100)
+    rmses_in_3.fill(-1)
+    rmses_out_3 = np.empty(100)
+    rmses_out_3.fill(-1)
+
+    rt_learner_tree_size = np.empty(100)
+    rt_learner_tree_size.fill(-1)
+    rt_learner_tree_time = np.empty(100)
+    rt_learner_tree_time.fill(-1)
+
+    for i in leaf_size:
+        learner = rt.RTLearner(leaf_size=i, verbose=False)  # constructor
+        rmses_in_3[i], rmses_out_3[i], rt_learner_tree_size[i], rt_learner_tree_time[i] = run_learner(learner, trainX, trainY, testX, testY)  # training step
+    plt.plot(leaf_size, rmses_in_3, label="In Sample")
+    plt.plot(leaf_size, rmses_out_3, label="Out Sample")
+    plt.legend(loc="best")
+    plt.grid(True)
+    plt.title('RTLearner overfitting with increasing leaf size.', fontsize=10)
+    plt.ylabel('RMSE')
+    plt.xlabel('Leaf Size')
+    plt.savefig('RTLearner overfitting with increasing leaf size.')
+    plt.clf()
+    plt.cla()
+    plt.close()
+
+
+    plt.plot(leaf_size, rt_learner_tree_size, label="RTLearner")
+    plt.plot(leaf_size, dt_learner_tree_size, label="DTLearner")
+    plt.legend(loc="best")
+    plt.grid(True)
+    plt.title('RTLearner vs DTLearner Tree Size.', fontsize=10)
+    plt.ylabel('Tree Size')
+    plt.xlabel('Leaf Size')
+    plt.savefig('RTLearner vs DTLearner Tree Size.')
+    plt.clf()
+    plt.cla()
+    plt.close()
+
+    plt.plot(leaf_size, rt_learner_tree_time, label="RTLearner")
+    plt.plot(leaf_size, dt_learner_tree_time, label="DTLearner")
+    plt.legend(loc="best")
+    plt.grid(True)
+    plt.title('RTLearner vs DTLearner Tree Building Time.', fontsize=10)
+    plt.ylabel('Tree Size')
+    plt.xlabel('Leaf Size')
+    plt.savefig('RTLearner vs DTLearner Tree Building Time.')
     plt.clf()
     plt.cla()
     plt.close()

@@ -23,9 +23,6 @@ GT honor code violation.
 """
 
 import numpy as np
-import DTLearner as dt
-import RTLearner as rt
-import LinRegLearner as lrl
 
 class BagLearner(object):
 
@@ -37,41 +34,8 @@ class BagLearner(object):
         self.verbose = verbose
         list_of_learners = []
         for i in range(bags):
-            if learner == dt.DTLearner:
-                verbose_assign = False
-                leaf_size_assign = 1
-                if 'verbose' in kwargs.keys():
-                    verbose_assign = kwargs.get('verbose')
-                    pass
-                if 'leaf_size' in kwargs.keys():
-                    leaf_size_assign = kwargs.get('leaf_size')
-                    pass
-                new_learner = dt.DTLearner(leaf_size_assign, verbose_assign)
-                list_of_learners.append(new_learner)
-            elif learner == rt.RTLearner:
-                verbose_assign = False
-                leaf_size_assign = 1
-                if 'verbose' in kwargs.keys():
-                    verbose_assign = kwargs.get('verbose')
-                    pass
-                if 'leaf_size' in kwargs.keys():
-                    leaf_size_assign = kwargs.get('leaf_size')
-                    pass
-                new_learner = rt.RTLearner(leaf_size_assign, verbose_assign)
-                list_of_learners.append(new_learner)
-            elif learner == lrl.LinRegLearner:
-                verbose_assign = False
-                if 'verbose' in kwargs.keys():
-                    verbose_assign = kwargs.get('verbose')
-                    pass
-                new_learner = lrl.LinRegLearner(verbose_assign)
-                list_of_learners.append(new_learner)
-            elif learner == BagLearner:
-                new_learner = BagLearner(learner, kwargs, bags, boost, verbose)
-                list_of_learners.append(new_learner)
-            else:
-                new_learner = learner(**kwargs)
-                list_of_learners.append(new_learner)
+            new_learner = learner(**kwargs)
+            list_of_learners.append(new_learner)
 
         self.list_of_learners = list_of_learners
 
@@ -111,5 +75,4 @@ class BagLearner(object):
 
 
 if __name__ == "__main__":
-    print
-    "the secret clue is 'zzyzx'"
+    print "This is teh BagLearner"

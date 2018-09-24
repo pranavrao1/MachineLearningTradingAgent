@@ -119,4 +119,4 @@ class DTLearner(object):
             return self.result_single_node(row, next_node, next_index)
   		   	  			    		  		  		    	 		 		   		 		  
 if __name__=="__main__":  		   	  			    		  		  		    	 		 		   		 		  
-    print "the secret clue is 'zzyzx'"  		   	  			    		  		  		    	 		 		   		 		  
+    print "This is the DTLearner'"

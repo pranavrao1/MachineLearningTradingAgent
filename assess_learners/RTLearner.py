@@ -119,5 +119,4 @@ class RTLearner(object):
 
 
 if __name__ == "__main__":
-    print
-    "the secret clue is 'zzyzx'"
+    print "This is the RTLearner"

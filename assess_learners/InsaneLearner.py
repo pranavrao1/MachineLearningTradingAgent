@@ -66,8 +66,7 @@ class InsaneLearner(object):
             counter = counter + 1
         answer = np.mean(results, axis=0)
         print answer
-        return  answer
+        return answer
 
 if __name__ == "__main__":
-    print
-    "the secret clue is 'zzyzx'"
+    print "This is InsaneLearner"

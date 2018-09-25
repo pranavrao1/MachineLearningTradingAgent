@@ -33,7 +33,19 @@ import sys
 import util
 import matplotlib.pyplot as plt
 import time
+'''
+TODO: Running Instructions here.
 
+This code does NOT require a parameter but accept one if provided.
+
+To run testlearner.py do NOT pass an input as it will attempt to find the istanbul.csv data file 
+using the provided util library.
+ 
+If the file has been moved you will need to provide the directory path with the 
+istanbul.csv file to correctly load it using the util library.
+
+You can also pass another file name as well.
+'''
 def run_learner(learner, trainX, trainY, testX, testY):
     # print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     print learner.author()

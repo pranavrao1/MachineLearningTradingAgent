@@ -35,7 +35,7 @@ import matplotlib.pyplot as plt
 import time
 
 def run_learner(learner, trainX, trainY, testX, testY):
-    print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    # print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     print learner.author()
     tree_building_start = time.time()
     learner.addEvidence(trainX, trainY)  # training step
@@ -49,26 +49,26 @@ def run_learner(learner, trainX, trainY, testX, testY):
         tree_size = 0
 
     rmse_in = math.sqrt(((trainY - predY) ** 2).sum() / trainY.shape[0])
-    print
-    print "In sample results"
-    print "RMSE: ", rmse_in
+    # print
+    # print "In sample results"
+    # print "RMSE: ", rmse_in
     c = np.corrcoef(predY, y=trainY)
-    print "corr: ", c[0, 1]
+    # print "corr: ", c[0, 1]
 
     # evaluate out of sample
     predY = learner.query(testX)  # get the predictions
     rmse_out = math.sqrt(((testY - predY) ** 2).sum() / testY.shape[0])
-    print
-    print "Out of sample results"
-    print "RMSE: ", rmse_out
+    # print
+    # print "Out of sample results"
+    # print "RMSE: ", rmse_out
     c = np.corrcoef(predY, y=testY)
-    print "corr: ", c[0, 1]
-    print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+    # print "corr: ", c[0, 1]
+    # print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
     return rmse_in, rmse_out, tree_size, (tree_building_end - tree_building_start)
 
 
 def generate_plots(datafile = 'Istanbul.csv'):
-    np.random.seed(903205913)
+    np.random.seed(10)
     print " Plotting graphs for " + str(datafile)
     with util.get_learner_data_file(datafile) as f:
         alldata = np.genfromtxt(f, delimiter=',')
@@ -99,11 +99,12 @@ def generate_plots(datafile = 'Istanbul.csv'):
     dt_learner_tree_time.fill(-1)
 
     leaf_size = range(100)
+    leaf_plot = range(1,101)
     for i in leaf_size:
-        learner = dt.DTLearner(leaf_size=i, verbose=False)  # constructor
+        learner = dt.DTLearner(leaf_size=i+1, verbose=False)  # constructor
         rmses_in[i], rmses_out[i], dt_learner_tree_size[i], dt_learner_tree_time[i] = run_learner(learner, trainX, trainY, testX, testY)  # training step
-    plt.plot(leaf_size, rmses_in, label="In Sample")
-    plt.plot(leaf_size, rmses_out, label="Out Sample")
+    plt.plot(leaf_plot, rmses_in, label="In Sample")
+    plt.plot(leaf_plot, rmses_out, label="Out Sample")
     plt.legend(loc="best")
     plt.grid(True)
     plt.title('DTLearner overfitting with increasing leaf size.', fontsize=10)
@@ -119,11 +120,11 @@ def generate_plots(datafile = 'Istanbul.csv'):
     rmses_out_2 = np.empty(100)
     rmses_out_2.fill(-1)
     for i in leaf_size:
-        kwargs = {'leaf_size': i}
+        kwargs = {'leaf_size': i+1}
         learner = bl.BagLearner(learner=dt.DTLearner, kwargs=kwargs, verbose=False, bags=20)  # constructor
         rmses_in_2[i], rmses_out_2[i], ignore, ignore_2 = run_learner(learner, trainX, trainY, testX, testY)  # training step
-    plt.plot(leaf_size, rmses_in_2, label="In Sample")
-    plt.plot(leaf_size, rmses_out_2, label="Out Sample")
+    plt.plot(leaf_plot, rmses_in_2, label="In Sample")
+    plt.plot(leaf_plot, rmses_out_2, label="Out Sample")
     plt.legend(loc="best")
     plt.grid(True)
     plt.title('Baglearner at 20 bags overfitting with increasing leaf size.', fontsize=10)
@@ -145,10 +146,10 @@ def generate_plots(datafile = 'Istanbul.csv'):
     rt_learner_tree_time.fill(-1)
 
     for i in leaf_size:
-        learner = rt.RTLearner(leaf_size=i, verbose=False)  # constructor
+        learner = rt.RTLearner(leaf_size=i+1, verbose=False)  # constructor
         rmses_in_3[i], rmses_out_3[i], rt_learner_tree_size[i], rt_learner_tree_time[i] = run_learner(learner, trainX, trainY, testX, testY)  # training step
-    plt.plot(leaf_size, rmses_in_3, label="In Sample")
-    plt.plot(leaf_size, rmses_out_3, label="Out Sample")
+    plt.plot(leaf_plot, rmses_in_3, label="In Sample")
+    plt.plot(leaf_plot, rmses_out_3, label="Out Sample")
     plt.legend(loc="best")
     plt.grid(True)
     plt.title('RTLearner overfitting with increasing leaf size.', fontsize=10)
@@ -160,8 +161,8 @@ def generate_plots(datafile = 'Istanbul.csv'):
     plt.close()
 
 
-    plt.plot(leaf_size, rt_learner_tree_size, label="RTLearner")
-    plt.plot(leaf_size, dt_learner_tree_size, label="DTLearner")
+    plt.plot(leaf_plot, rt_learner_tree_size, label="RTLearner")
+    plt.plot(leaf_plot, dt_learner_tree_size, label="DTLearner")
     plt.legend(loc="best")
     plt.grid(True)
     plt.title('RTLearner vs DTLearner Tree Size.', fontsize=10)
@@ -172,14 +173,34 @@ def generate_plots(datafile = 'Istanbul.csv'):
     plt.cla()
     plt.close()
 
-    plt.plot(leaf_size, rt_learner_tree_time, label="RTLearner")
-    plt.plot(leaf_size, dt_learner_tree_time, label="DTLearner")
+    plt.plot(leaf_plot, rt_learner_tree_time, label="RTLearner")
+    plt.plot(leaf_plot, dt_learner_tree_time, label="DTLearner")
     plt.legend(loc="best")
     plt.grid(True)
     plt.title('RTLearner vs DTLearner Tree Building Time.', fontsize=10)
-    plt.ylabel('Tree Size')
+    plt.ylabel('Time (Seconds)')
     plt.xlabel('Leaf Size')
     plt.savefig('RTLearner vs DTLearner Tree Building Time.')
+    plt.clf()
+    plt.cla()
+    plt.close()
+
+    rmses_in_5 = np.empty(100)
+    rmses_in_5.fill(-1)
+    rmses_out_5 = np.empty(100)
+    rmses_out_5.fill(-1)
+    for i in leaf_size:
+        kwargs = {'leaf_size': i+1}
+        learner = bl.BagLearner(learner=dt.DTLearner, kwargs=kwargs, verbose=False, bags=10)  # constructor
+        rmses_in_5[i], rmses_out_5[i], ignore, ignore_2 = run_learner(learner, trainX, trainY, testX, testY)  # training step
+    plt.plot(leaf_plot, rmses_in_5, label="In Sample")
+    plt.plot(leaf_plot, rmses_out_5, label="Out Sample")
+    plt.legend(loc="best")
+    plt.grid(True)
+    plt.title('Baglearner at 10 bags overfitting with increasing leaf size.', fontsize=10)
+    plt.ylabel('RMSE')
+    plt.xlabel('Leaf Size')
+    plt.savefig('Baglearner at 10 bags overfitting with increasing leaf size.')
     plt.clf()
     plt.cla()
     plt.close()

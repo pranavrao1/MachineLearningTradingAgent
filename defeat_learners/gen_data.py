@@ -36,14 +36,23 @@ def best4LinReg(seed=1489683273):
     Y = np.random.random(size = (100,))*200-100  		   	  			    		  		  		    	 		 		   		 		  
     # Here's is an example of creating a Y from randomly generated  		   	  			    		  		  		    	 		 		   		 		  
     # X with multiple columns  		   	  			    		  		  		    	 		 		   		 		  
-    # Y = X[:,0] + np.sin(X[:,1]) + X[:,2]**2 + X[:,3]**3  		   	  			    		  		  		    	 		 		   		 		  
+    # Y = X[:,0] + np.sin(X[:,1]) + X[:,2]**2 + X[:,3]**3
+    # Code from here
+    X = np.random.normal(size=(100,2))
+    Y = X[:, 0] + 2*X[:,1]
     return X, Y  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
-def best4DT(seed=1489683273):  		   	  			    		  		  		    	 		 		   		 		  
-    np.random.seed(seed)  		   	  			    		  		  		    	 		 		   		 		  
-    X = np.zeros((100,2))  		   	  			    		  		  		    	 		 		   		 		  
-    Y = np.random.random(size = (100,))*200-100  		   	  			    		  		  		    	 		 		   		 		  
-    return X, Y  		   	  			    		  		  		    	 		 		   		 		  
+def best4DT(seed=1489683273):
+    np.random.seed(seed)
+    X = np.zeros((100,2))
+    Y = np.random.random(size = (100,))*200-100
+    # Code from here
+    Y = np.zeros((100,))
+    X = np.random.normal(size=(100, 100))
+    for i in range(100):
+        y_intermittent = [np.sin(X[:, i])**3]
+    Y = sum(y_intermittent)
+    return X, Y
   		   	  			    		  		  		    	 		 		   		 		  
 def author():  		   	  			    		  		  		    	 		 		   		 		  
     return 'prao43' #Change this to your user ID

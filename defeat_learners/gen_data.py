@@ -47,10 +47,12 @@ def best4DT(seed=1489683273):
     X = np.zeros((100,2))
     Y = np.random.random(size = (100,))*200-100
     # Code from here
-    Y = np.zeros((100,))
-    X = np.random.normal(size=(100, 100))
-    for i in range(100):
-        y_intermittent = [np.sin(X[:, i])**3]
+    num_of_rows = 50
+    num_of_col = 4
+    X = np.random.normal(size=(num_of_rows, num_of_col))
+    Y = np.zeros((num_of_rows, ))
+    for i in range(num_of_col):
+        y_intermittent = [np.sin(X[:, i])**3 + np.sin(X[:, i])**2]
     Y = sum(y_intermittent)
     return X, Y
   		   	  			    		  		  		    	 		 		   		 		  

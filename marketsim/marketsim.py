@@ -29,7 +29,10 @@ import pandas as pd
 import numpy as np  		   	  			    		  		  		    	 		 		   		 		  
 import datetime as dt  		   	  			    		  		  		    	 		 		   		 		  
 import os  		   	  			    		  		  		    	 		 		   		 		  
-from util import get_data, plot_data  		   	  			    		  		  		    	 		 		   		 		  
+from util import get_data, plot_data
+
+def author():
+    return 'prao43'
   		   	  			    		  		  		    	 		 		   		 		  
 def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, commission=9.95, impact=0.005):  		   	  			    		  		  		    	 		 		   		 		  
     # this is the function the autograder will call to test your code  		   	  			    		  		  		    	 		 		   		 		  
@@ -39,35 +42,88 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, c
   		   	  			    		  		  		    	 		 		   		 		  
     # In the template, instead of computing the value of the portfolio, we just  		   	  			    		  		  		    	 		 		   		 		  
     # read in the value of IBM over 6 months  		   	  			    		  		  		    	 		 		   		 		  
-    start_date = dt.datetime(2008,1,1)  		   	  			    		  		  		    	 		 		   		 		  
-    end_date = dt.datetime(2008,6,1)  		   	  			    		  		  		    	 		 		   		 		  
-    portvals = get_data(['IBM'], pd.date_range(start_date, end_date))  		   	  			    		  		  		    	 		 		   		 		  
-    portvals = portvals[['IBM']]  # remove SPY  		   	  			    		  		  		    	 		 		   		 		  
-    rv = pd.DataFrame(index=portvals.index, data=portvals.as_matrix())  		   	  			    		  		  		    	 		 		   		 		  
-  		   	  			    		  		  		    	 		 		   		 		  
-    return rv  		   	  			    		  		  		    	 		 		   		 		  
-    return portvals  		   	  			    		  		  		    	 		 		   		 		  
+    # start_date = dt.datetime(2008,1,1)
+    # end_date = dt.datetime(2008,6,1)
+    # portvals = get_data(['IBM'], pd.date_range(start_date, end_date))
+    # portvals = portvals[['IBM']]  # remove SPY
+    # rv = pd.DataFrame(index=portvals.index, data=portvals.as_matrix())
+  	#
+    # return rv
+    orders_df = pd.read_csv(orders_file, index_col='Date', parse_dates=True, na_values=['nan'])
+    orders_df.sort_index()
+    start_date = orders_df.first_valid_index()
+    end_date = orders_df.last_valid_index()
+    date_range = pd.date_range(start_date, end_date)
+
+    array_symbols = orders_df.Symbol.unique()
+    prices_df = get_data(array_symbols.tolist(), date_range)
+    prices_df.fillna(method="ffill", inplace=True)
+    prices_df.fillna(method="bfill", inplace=True)
+
+    trades_df_columns = np.append(array_symbols, ['Cash'])
+    filtered_date_range = prices_df.index
+    trades_df = pd.DataFrame(0.0,index=filtered_date_range, columns=trades_df_columns.tolist())
+    holdings_df = pd.DataFrame(0.0,index=filtered_date_range, columns=trades_df_columns.tolist())
+
+    # Enter Data into trades DF
+    for date, row in orders_df.iterrows():
+        symbol = row['Symbol']
+        shares = row['Shares']
+        multiplier = 1 # if it is a BUY
+        if row['Order'] == 'SELL':
+            multiplier = -1
+        trades_df.loc[date][symbol] += multiplier * shares
+        trades_df.loc[date]['Cash'] += -1*trades_df.loc[date][symbol] * prices_df.loc[date][symbol]
+
+    # Enter Data into holdings DF
+    initial = True
+    for date, row in trades_df.iterrows():
+        if initial:
+            holdings_df.loc[date]['Cash'] += start_val
+            initial = False
+            holdings_df.loc[[date]] += row
+        else:
+            holdings_df.loc[[date]] += row + holdings_df.shift(1)
+
+    # Enter Data into value DF
+    prices_df['Cash'] = 1.0
+    value_df = prices_df * holdings_df
+    portvals = value_df.sum(axis=1)
+    return portvals
+
+# REMOVE
+def compute_daily_returns(df):
+    """Compute and return the daily return values."""
+    daily_returns = df.copy()
+    daily_returns[1:] = (df[1:] / df[:-1].values) - 1
+    #daily_returns.ix[0, :] = 0 # set daily returns for row 0 to 0
+    return daily_returns[1:]
+# REMOVE
+def compute_portfolio_stats(port_val, rfr=0.0, sf=252):
+    daily_rets = compute_daily_returns(port_val)
+    cr = (port_val[-1]/port_val[0]) - 1
+    adr = daily_rets.mean()
+    sddr = daily_rets.std()
+    sr = np.sqrt(sf)*((daily_rets - rfr).mean() / daily_rets.std())
+    return cr, adr, sddr, sr
   		   	  			    		  		  		    	 		 		   		 		  
 def test_code():  		   	  			    		  		  		    	 		 		   		 		  
     # this is a helper function you can use to test your code  		   	  			    		  		  		    	 		 		   		 		  
     # note that during autograding his function will not be called.  		   	  			    		  		  		    	 		 		   		 		  
     # Define input parameters  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
-    of = "./orders/orders2.csv"  		   	  			    		  		  		    	 		 		   		 		  
-    sv = 1000000  		   	  			    		  		  		    	 		 		   		 		  
+    of = "./orders/orders-00.csv"
+    sv = 1000000
+    commission = 0.00
+    impact = 0.0
   		   	  			    		  		  		    	 		 		   		 		  
     # Process orders  		   	  			    		  		  		    	 		 		   		 		  
-    portvals = compute_portvals(orders_file = of, start_val = sv)  		   	  			    		  		  		    	 		 		   		 		  
-    if isinstance(portvals, pd.DataFrame):  		   	  			    		  		  		    	 		 		   		 		  
-        portvals = portvals[portvals.columns[0]] # just get the first column  		   	  			    		  		  		    	 		 		   		 		  
-    else:  		   	  			    		  		  		    	 		 		   		 		  
-        "warning, code did not return a DataFrame"  		   	  			    		  		  		    	 		 		   		 		  
-  		   	  			    		  		  		    	 		 		   		 		  
+    portvals = compute_portvals(orders_file = of, start_val = sv, commission=commission, impact=impact)
     # Get portfolio stats  		   	  			    		  		  		    	 		 		   		 		  
     # Here we just fake the data. you should use your code from previous assignments.  		   	  			    		  		  		    	 		 		   		 		  
     start_date = dt.datetime(2008,1,1)  		   	  			    		  		  		    	 		 		   		 		  
     end_date = dt.datetime(2008,6,1)  		   	  			    		  		  		    	 		 		   		 		  
-    cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = [0.2,0.01,0.02,1.5]  		   	  			    		  		  		    	 		 		   		 		  
+    cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = compute_portfolio_stats(portvals)
     cum_ret_SPY, avg_daily_ret_SPY, std_daily_ret_SPY, sharpe_ratio_SPY = [0.2,0.01,0.02,1.5]  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
     # Compare portfolio against $SPX  		   	  			    		  		  		    	 		 		   		 		  

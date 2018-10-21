@@ -72,8 +72,12 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, c
         multiplier = 1 # if it is a BUY
         if row['Order'] == 'SELL':
             multiplier = -1
-        trades_df.loc[date][symbol] += multiplier * shares
-        trades_df.loc[date]['Cash'] += -1*trades_df.loc[date][symbol] * prices_df.loc[date][symbol]
+        volume = multiplier * shares
+        stock_price = prices_df.loc[date][symbol]
+        transaction = volume * stock_price
+        trades_impact = shares * stock_price * impact
+        trades_df.loc[date][symbol] += volume
+        trades_df.loc[date]['Cash'] += -1*transaction - commission - trades_impact
 
     # Enter Data into holdings DF
     initial = True
@@ -91,14 +95,12 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, c
     portvals = value_df.sum(axis=1)
     return portvals
 
-# REMOVE
+
 def compute_daily_returns(df):
-    """Compute and return the daily return values."""
     daily_returns = df.copy()
     daily_returns[1:] = (df[1:] / df[:-1].values) - 1
-    #daily_returns.ix[0, :] = 0 # set daily returns for row 0 to 0
     return daily_returns[1:]
-# REMOVE
+
 def compute_portfolio_stats(port_val, rfr=0.0, sf=252):
     daily_rets = compute_daily_returns(port_val)
     cr = (port_val[-1]/port_val[0]) - 1

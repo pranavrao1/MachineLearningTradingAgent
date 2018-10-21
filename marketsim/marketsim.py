@@ -27,8 +27,7 @@ GT ID: 900897987 (replace with your GT ID)
   		   	  			    		  		  		    	 		 		   		 		  
 import pandas as pd  		   	  			    		  		  		    	 		 		   		 		  
 import numpy as np  		   	  			    		  		  		    	 		 		   		 		  
-import datetime as dt  		   	  			    		  		  		    	 		 		   		 		  
-import os  		   	  			    		  		  		    	 		 		   		 		  
+import datetime as dt
 from util import get_data, plot_data
 
 def author():
@@ -116,8 +115,8 @@ def test_code():
   		   	  			    		  		  		    	 		 		   		 		  
     of = "./orders/orders-00.csv"
     sv = 1000000
-    commission = 0.00
-    impact = 0.0
+    commission = 9.95
+    impact = 0.005
   		   	  			    		  		  		    	 		 		   		 		  
     # Process orders  		   	  			    		  		  		    	 		 		   		 		  
     portvals = compute_portvals(orders_file = of, start_val = sv, commission=commission, impact=impact)

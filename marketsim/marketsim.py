@@ -67,14 +67,14 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, c
     # Enter Data into trades DF
     for date, row in orders_df.iterrows():
         symbol = row['Symbol']
-        shares = row['Shares']
+        number_shares = row['Shares']
         multiplier = 1 # if it is a BUY
         if row['Order'] == 'SELL':
             multiplier = -1
-        volume = multiplier * shares
+        volume = multiplier * number_shares
         stock_price = prices_df.loc[date][symbol]
         transaction = volume * stock_price
-        trades_impact = shares * stock_price * impact
+        trades_impact = number_shares * stock_price * impact
         trades_df.loc[date][symbol] += volume
         trades_df.loc[date]['Cash'] += -1*transaction - commission - trades_impact
 

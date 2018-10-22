@@ -72,21 +72,17 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, c
         if row['Order'] == 'SELL':
             multiplier = -1
         volume = multiplier * number_shares
-        stock_price = prices_df.loc[date][symbol]
-        transaction = volume * stock_price
-        trades_impact = number_shares * stock_price * impact
-        trades_df.loc[date][symbol] += volume
-        trades_df.loc[date]['Cash'] += -1*transaction - commission - trades_impact
+        if date in prices_df.index:
+            stock_price = prices_df.loc[date][symbol]
+            transaction = volume * stock_price
+            trades_impact = number_shares * stock_price * impact
+            trades_df.loc[date][symbol] += volume
+            trades_df.loc[date]['Cash'] += -1*transaction - commission - trades_impact
 
     # Enter Data into holdings DF
-    initial = True
-    for date, row in trades_df.iterrows():
-        if initial:
-            holdings_df.loc[date]['Cash'] += start_val
-            initial = False
-            holdings_df.loc[[date]] += row
-        else:
-            holdings_df.loc[[date]] += row + holdings_df.shift(1)
+    holdings_df = trades_df
+    holdings_df['Cash'][0] += start_val
+    holdings_df = holdings_df.cumsum()
 
     # Enter Data into value DF
     prices_df['Cash'] = 1.0
@@ -118,7 +114,10 @@ def test_code():
     commission = 9.95
     impact = 0.005
   		   	  			    		  		  		    	 		 		   		 		  
-    # Process orders  		   	  			    		  		  		    	 		 		   		 		  
+    # Process orders
+    start_time = dt.datetime.now()
+    print "Start Time:"
+    print(start_time)
     portvals = compute_portvals(orders_file = of, start_val = sv, commission=commission, impact=impact)
     # Get portfolio stats  		   	  			    		  		  		    	 		 		   		 		  
     # Here we just fake the data. you should use your code from previous assignments.  		   	  			    		  		  		    	 		 		   		 		  
@@ -127,7 +126,13 @@ def test_code():
     cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = compute_portfolio_stats(portvals)
     cum_ret_SPY, avg_daily_ret_SPY, std_daily_ret_SPY, sharpe_ratio_SPY = [0.2,0.01,0.02,1.5]  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
-    # Compare portfolio against $SPX  		   	  			    		  		  		    	 		 		   		 		  
+    # Compare portfolio against $SPX
+    end_time = dt.datetime.now()
+    print "End Time:"
+    print(end_time)
+
+    print "Difference:"
+    print(end_time- start_time)
     print "Date Range: {} to {}".format(start_date, end_date)  		   	  			    		  		  		    	 		 		   		 		  
     print  		   	  			    		  		  		    	 		 		   		 		  
     print "Sharpe Ratio of Fund: {}".format(sharpe_ratio)  		   	  			    		  		  		    	 		 		   		 		  

@@ -62,7 +62,6 @@ def compute_portvals(orders_file = "./orders/orders.csv", start_val = 1000000, c
     trades_df_columns = np.append(array_symbols, ['Cash'])
     filtered_date_range = prices_df.index
     trades_df = pd.DataFrame(0.0,index=filtered_date_range, columns=trades_df_columns.tolist())
-    holdings_df = pd.DataFrame(0.0,index=filtered_date_range, columns=trades_df_columns.tolist())
 
     # Enter Data into trades DF
     for date, row in orders_df.iterrows():

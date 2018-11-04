@@ -69,9 +69,9 @@ def testPolicy(symbol = "AAPL",
                 total_holdings -= 2000
                 holdings_df.loc[index]['Holdings'] = total_holdings
 
-    df_trades = pd.concat([symbols_df, orders_df, shares_df, holdings_df], axis=1)
-    df_trades.columns = ['Symbol', 'Order', 'Shares', 'Holdings']
-    return df_trades[df_trades.Shares != 0]
+    trades_df = pd.concat([symbols_df, orders_df, shares_df, holdings_df], axis=1)
+    trades_df.columns = ['Symbol', 'Order', 'Shares', 'Holdings']
+    return trades_df[trades_df.Order != 'HOLD']
 
 def testPolicyBenchmark(symbol = "AAPL",
                sd=dt.datetime(2010,1,1),
@@ -88,13 +88,11 @@ def testPolicyBenchmark(symbol = "AAPL",
     symbols_df = pd.DataFrame(symbol, index = prices_normalized_df.index, columns = ['Symbol'])
     holdings_df = pd.DataFrame(0, index = prices_normalized_df.index, columns = ['Holdings'])
 
-    number_of_entries = prices_normalized_df.shape[0]
-    total_holdings = 0
     current_date = prices_normalized_df.index[0]
     shares_df.loc[current_date]['Shares'] = 1000
-    df_trades = pd.concat([symbols_df, orders_df, shares_df, holdings_df], axis=1)
-    df_trades.columns = ['Symbol', 'Order', 'Shares', 'Holdings']
-    return df_trades
+    trades_df = pd.concat([symbols_df, orders_df, shares_df, holdings_df], axis=1)
+    trades_df.columns = ['Symbol', 'Order', 'Shares', 'Holdings']
+    return trades_df
 
 
 def generateSecondPlot():
@@ -104,38 +102,25 @@ def generateSecondPlot():
     df = get_data(stock_ticker, dates)
     df.fillna(method='ffill', inplace=True)
     df.fillna(method='bfill', inplace=True)
-    normalized_df = df / df.ix[0, :]
-    years = matplot_dates.YearLocator()  # every year
-    months = matplot_dates.MonthLocator()  # every month
-    yearsFmt = matplot_dates.DateFormatter('%Y')
-    monthsFmt = matplot_dates.DateFormatter('%b')
     pd.set_option('chained_assignment', None)
     start_value = 100000
-    df_trades = testPolicy(symbol="JPM", sd=start_date, ed=end_date, sv=start_value)
-    portfolio_value_out = ms.compute_portvals(df_trades, start_val=start_value, commission=9.95, impact=0.005)
+    trades_df = testPolicy(symbol="JPM", sd=start_date, ed=end_date, sv=start_value)
+    portfolio_value_out = ms.compute_portvals(trades_df, start_val=start_value, commission=9.95, impact=0.005)
     portfolio_value_out.fillna(method='ffill', inplace=True)
     portfolio_value_out.fillna(method='bfill', inplace=True)
     portfolio_value_norm = portfolio_value_out / portfolio_value_out.ix[0, :]
-    df_trades_benchmark_out = testPolicyBenchmark(symbol="JPM", sd=start_date, ed=end_date, sv=start_value)
-    benchmark_value_out = ms.compute_portvals(df_trades_benchmark_out, start_val=start_value, commission=9.95,
+    trades_df_benchmark_out = testPolicyBenchmark(symbol="JPM", sd=start_date, ed=end_date, sv=start_value)
+    benchmark_value_out = ms.compute_portvals(trades_df_benchmark_out, start_val=start_value, commission=9.95,
                                               impact=0.005)
     benchmark_value_out.fillna(method='ffill', inplace=True)
     benchmark_value_out.fillna(method='bfill', inplace=True)
     benchmark_value_norm = benchmark_value_out / benchmark_value_out.ix[0, :]
     second_plot = portfolio_value_norm.plot(grid=True, title='Manual Strategy Out-Sample', use_index=True,
                                                 color='black')
-    second_plot.xaxis.set_major_locator(matplot_dates.MonthLocator())
-    second_plot.xaxis.set_major_formatter(matplot_dates.DateFormatter('%b'))
-    second_plot.xaxis.set_minor_locator(matplot_dates.YearLocator())
-    second_plot.xaxis.set_minor_formatter(matplot_dates.DateFormatter('%Y'))
-    second_plot.xaxis.set_tick_params(which='minor', pad=20)
-    date_min = dt.date(df_trades.index.min().year, 1, 1)
-    date_max = dt.date(df_trades.index.max().year + 1, 1, 1)
-    second_plot.set_xlabel("Date")
-    second_plot.set_ylabel("Normalized Portfolio Value")
-    second_plot.set_xlim(date_min, date_max)
-    second_plot = benchmark_value_norm.plot(grid=True, title='', use_index=True, color='blue')
-    for index, row in df_trades.iterrows():
+    assign_plot_labels(trades_df, second_plot)
+    third_plot = benchmark_value_norm.plot(grid=True, title='', use_index=True, color='blue')
+    assign_plot_labels(trades_df, third_plot)
+    for index, row in trades_df.iterrows():
         if row['Order'] == 'BUY':
             plt.axvline(x=index, color='g', linestyle='-')
         elif row['Order'] == 'SELL':
@@ -146,21 +131,21 @@ def generateSecondPlot():
     plt.clf()
     plt.cla()
     plt.close()
-    print "NORMALIZED OUT OF SAMPLE"
+    print "OUT-SAMPLE"
     cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = ms.compute_portfolio_stats(portfolio_value_norm)
     cum_ret_bench, avg_daily_ret_bench, std_daily_ret_bench, sharpe_ratio_bench = ms.compute_portfolio_stats(
         benchmark_value_norm)
-    print "Sharpe Ratio of Portfolio: {}".format(sharpe_ratio)
-    print "Sharpe Ratio of Benchmark : {}".format(sharpe_ratio_bench)
+    print "Sharpe Ratio of Portfolio: "+ str(sharpe_ratio)
+    print "Sharpe Ratio of Benchmark : "+ str(sharpe_ratio_bench)
     print
-    print "Cumulative Return of Portfolio: {}".format(cum_ret)
-    print "Cumulative Return of Benchmark: {}".format(cum_ret_bench)
+    print "Cumulative Return of Portfolio: "+ str(cum_ret)
+    print "Cumulative Return of Benchmark: "+ str(cum_ret_bench)
     print
-    print "Standard Deviation of Portfolio: {}".format(std_daily_ret)
-    print "Standard Deviation of Benchmark: {}".format(std_daily_ret_bench)
+    print "Standard Deviation of Portfolio: "+ str(std_daily_ret)
+    print "Standard Deviation of Benchmark: "+ str(std_daily_ret_bench)
     print
-    print "Average Daily Return of Portfolio: {}".format(avg_daily_ret)
-    print "Average Daily Return of Benchmark: {}".format(avg_daily_ret_bench)
+    print "Average Daily Return of Portfolio: "+ str(avg_daily_ret)
+    print "Average Daily Return of Benchmark: "+ str(avg_daily_ret_bench)
 
 
 def generate_second_plot():
@@ -170,36 +155,23 @@ def generate_second_plot():
     df = get_data(stock_ticker, dates)
     df.fillna(method='ffill', inplace=True)
     df.fillna(method='bfill', inplace=True)
-    normalized_df = df / df.ix[0, :]
-    years = matplot_dates.YearLocator()  # every year
-    months = matplot_dates.MonthLocator()  # every month
-    yearsFmt = matplot_dates.DateFormatter('%Y')
-    monthsFmt = matplot_dates.DateFormatter('%b')
     pd.set_option('chained_assignment', None)
     start_value = 100000
-    df_trades = testPolicy(symbol="JPM", sd=start_date, ed=end_date, sv=start_value)
-    portfolio_value = ms.compute_portvals(df_trades, start_val=start_value, commission=9.95, impact=0.005)
+    trades_df = testPolicy(symbol="JPM", sd=start_date, ed=end_date, sv=start_value)
+    portfolio_value = ms.compute_portvals(trades_df, start_val=start_value, commission=9.95, impact=0.005)
     portfolio_value.fillna(method='ffill', inplace=True)
     portfolio_value.fillna(method='bfill', inplace=True)
     portfolio_value_norm = portfolio_value / portfolio_value.ix[0, :]
-    df_trades_benchmark = testPolicyBenchmark(symbol="JPM", sd=start_date, ed=end_date, sv=start_value)
-    benchmark_value = ms.compute_portvals(df_trades_benchmark, start_val=start_value, commission=9.95, impact=0.005)
+    trades_df_benchmark = testPolicyBenchmark(symbol="JPM", sd=start_date, ed=end_date, sv=start_value)
+    benchmark_value = ms.compute_portvals(trades_df_benchmark, start_val=start_value, commission=9.95, impact=0.005)
     benchmark_value.fillna(method='ffill', inplace=True)
     benchmark_value.fillna(method='bfill', inplace=True)
     benchmark_value_norm = benchmark_value / benchmark_value.ix[0, :]
     first_plot = portfolio_value_norm.plot(grid=True, title='Manual Strategy In-Sample', use_index=True, color='black')
-    first_plot.xaxis.set_major_locator(matplot_dates.MonthLocator())
-    first_plot.xaxis.set_major_formatter(matplot_dates.DateFormatter('%b'))
-    first_plot.xaxis.set_minor_locator(matplot_dates.YearLocator())
-    first_plot.xaxis.set_minor_formatter(matplot_dates.DateFormatter('%Y'))
-    first_plot.xaxis.set_tick_params(which='minor', pad=20)
-    date_min = dt.date(df_trades.index.min().year, 1, 1)
-    date_max = dt.date(df_trades.index.max().year + 1, 1, 1)
-    first_plot.set_xlabel("Date")
-    first_plot.set_ylabel("Normalized Portfolio Value")
-    first_plot.set_xlim(date_min, date_max)
+    assign_plot_labels(trades_df, first_plot)
     second_plot = benchmark_value_norm.plot(grid=True, title='', use_index=True, color='blue')
-    for index, row in df_trades.iterrows():
+    assign_plot_labels(trades_df, second_plot)
+    for index, row in trades_df.iterrows():
         if row['Order'] == 'BUY':
             plt.axvline(x=index, color='g', linestyle='-')
         elif row['Order'] == 'SELL':
@@ -209,26 +181,39 @@ def generate_second_plot():
     plt.clf()
     plt.cla()
     plt.close()
-    print "NORMALIZED IN SAMPLE"
+    print "IN-SAMPLE"
     cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = ms.compute_portfolio_stats(portfolio_value_norm)
     cum_ret_bench, avg_daily_ret_bench, std_daily_ret_bench, sharpe_ratio_bench = ms.compute_portfolio_stats(
         benchmark_value_norm)
-    print "Sharpe Ratio of Portfolio: {}".format(sharpe_ratio)
-    print "Sharpe Ratio of Benchmark : {}".format(sharpe_ratio_bench)
+    print "Sharpe Ratio of Portfolio: "+ str(sharpe_ratio)
+    print "Sharpe Ratio of Benchmark : "+ str(sharpe_ratio_bench)
     print
-    print "Cumulative Return of Portfolio: {}".format(cum_ret)
-    print "Cumulative Return of Benchmark: {}".format(cum_ret_bench)
+    print "Cumulative Return of Portfolio: "+ str(cum_ret)
+    print "Cumulative Return of Benchmark: "+ str(cum_ret_bench)
     print
-    print "Standard Deviation of Portfolio: {}".format(std_daily_ret)
-    print "Standard Deviation of Benchmark: {}".format(std_daily_ret_bench)
+    print "Standard Deviation of Portfolio: "+ str(std_daily_ret)
+    print "Standard Deviation of Benchmark: "+ str(std_daily_ret_bench)
     print
-    print "Average Daily Return of Portfolio: {}".format(avg_daily_ret)
-    print "Average Daily Return of Benchmark: {}".format(avg_daily_ret_bench)
+    print "Average Daily Return of Portfolio: "+ str(avg_daily_ret)
+    print "Average Daily Return of Benchmark: "+ str(avg_daily_ret_bench)
+
+
+def assign_plot_labels(trades_df, first_plot):
+    first_plot.xaxis.set_major_locator(matplot_dates.MonthLocator())
+    first_plot.xaxis.set_major_formatter(matplot_dates.DateFormatter('%b'))
+    first_plot.xaxis.set_minor_locator(matplot_dates.YearLocator())
+    first_plot.xaxis.set_minor_formatter(matplot_dates.DateFormatter('%Y'))
+    first_plot.xaxis.set_tick_params(which='minor', pad=20)
+    date_min = dt.date(trades_df.index.min().year, 1, 1)
+    date_max = dt.date(trades_df.index.max().year + 1, 1, 1)
+    first_plot.set_xlabel("Date")
+    first_plot.set_ylabel("Normalized Portfolio Value")
+    first_plot.set_xlim(date_min, date_max)
 
 
 if __name__ == "__main__":
     stock_ticker = ['JPM']
 
     generate_second_plot()
-
+    print
     generateSecondPlot()

@@ -67,8 +67,6 @@ def testPolicyBenchmark(symbol = "AAPL",
     symbols_df = pd.DataFrame(symbol, index = prices_normalized_df.index, columns = ['Symbol'])
     holdings_df = pd.DataFrame(0, index = prices_normalized_df.index, columns = ['Holdings'])
 
-    number_of_entries = prices_normalized_df.shape[0]
-    total_holdings = 0
     current_date = prices_normalized_df.index[0]
     shares_df.loc[current_date]['Shares'] = 1000
     df_trades = pd.concat([symbols_df, orders_df, shares_df, holdings_df], axis=1)

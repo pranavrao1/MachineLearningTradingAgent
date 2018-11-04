@@ -98,7 +98,6 @@ def testPolicyBenchmark(symbol = "AAPL",
 
 
 def generateSecondPlot():
-    global start_date, end_date, dates, df, normalized_df, years, months, yearsFmt, monthsFmt, start_value, benchmark_value_norm, second_plot, date_min, date_max, cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio, cum_ret_bench, avg_daily_ret_bench, std_daily_ret_bench, sharpe_ratio_bench
     start_date = dt.datetime(2010, 1, 1)
     end_date = dt.datetime(2011, 12, 31)
     dates = pd.date_range(start_date, end_date)
@@ -112,18 +111,18 @@ def generateSecondPlot():
     monthsFmt = matplot_dates.DateFormatter('%b')
     pd.set_option('chained_assignment', None)
     start_value = 100000
-    df_trades_out = testPolicy(symbol="JPM", sd=start_date, ed=end_date, sv=start_value)
+    df_trades = testPolicy(symbol="JPM", sd=start_date, ed=end_date, sv=start_value)
     portfolio_value_out = ms.compute_portvals(df_trades, start_val=start_value, commission=9.95, impact=0.005)
     portfolio_value_out.fillna(method='ffill', inplace=True)
     portfolio_value_out.fillna(method='bfill', inplace=True)
-    portfolio_value_out_norm = portfolio_value_out / portfolio_value_out.ix[0, :]
+    portfolio_value_norm = portfolio_value_out / portfolio_value_out.ix[0, :]
     df_trades_benchmark_out = testPolicyBenchmark(symbol="JPM", sd=start_date, ed=end_date, sv=start_value)
     benchmark_value_out = ms.compute_portvals(df_trades_benchmark_out, start_val=start_value, commission=9.95,
                                               impact=0.005)
     benchmark_value_out.fillna(method='ffill', inplace=True)
     benchmark_value_out.fillna(method='bfill', inplace=True)
     benchmark_value_norm = benchmark_value_out / benchmark_value_out.ix[0, :]
-    second_plot = portfolio_value_out_norm.plot(grid=True, title='Manual Strategy Out-Sample', use_index=True,
+    second_plot = portfolio_value_norm.plot(grid=True, title='Manual Strategy Out-Sample', use_index=True,
                                                 color='black')
     second_plot.xaxis.set_major_locator(matplot_dates.MonthLocator())
     second_plot.xaxis.set_major_formatter(matplot_dates.DateFormatter('%b'))
@@ -147,34 +146,24 @@ def generateSecondPlot():
     plt.clf()
     plt.cla()
     plt.close()
-    print
-    "NORMALIZED OUT OF SAMPLE"
+    print "NORMALIZED OUT OF SAMPLE"
     cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = ms.compute_portfolio_stats(portfolio_value_norm)
     cum_ret_bench, avg_daily_ret_bench, std_daily_ret_bench, sharpe_ratio_bench = ms.compute_portfolio_stats(
         benchmark_value_norm)
+    print "Sharpe Ratio of Portfolio: {}".format(sharpe_ratio)
+    print "Sharpe Ratio of Benchmark : {}".format(sharpe_ratio_bench)
     print
-    "Sharpe Ratio of Portfolio: {}".format(sharpe_ratio)
+    print "Cumulative Return of Portfolio: {}".format(cum_ret)
+    print "Cumulative Return of Benchmark: {}".format(cum_ret_bench)
     print
-    "Sharpe Ratio of Benchmark : {}".format(sharpe_ratio_bench)
+    print "Standard Deviation of Portfolio: {}".format(std_daily_ret)
+    print "Standard Deviation of Benchmark: {}".format(std_daily_ret_bench)
     print
-    print
-    "Cumulative Return of Portfolio: {}".format(cum_ret)
-    print
-    "Cumulative Return of Benchmark: {}".format(cum_ret_bench)
-    print
-    print
-    "Standard Deviation of Portfolio: {}".format(std_daily_ret)
-    print
-    "Standard Deviation of Benchmark: {}".format(std_daily_ret_bench)
-    print
-    print
-    "Average Daily Return of Portfolio: {}".format(avg_daily_ret)
-    print
-    "Average Daily Return of Benchmark: {}".format(avg_daily_ret_bench)
+    print "Average Daily Return of Portfolio: {}".format(avg_daily_ret)
+    print "Average Daily Return of Benchmark: {}".format(avg_daily_ret_bench)
 
 
 def generate_second_plot():
-    global start_date, end_date, dates, df, normalized_df, years, months, yearsFmt, monthsFmt, start_value, df_trades, portfolio_value_norm, benchmark_value_norm, date_min, date_max, second_plot, cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio, cum_ret_bench, avg_daily_ret_bench, std_daily_ret_bench, sharpe_ratio_bench
     start_date = dt.datetime(2008, 1, 1)
     end_date = dt.datetime(2009, 12, 31)
     dates = pd.date_range(start_date, end_date)
@@ -220,30 +209,21 @@ def generate_second_plot():
     plt.clf()
     plt.cla()
     plt.close()
-    print
-    "NORMALIZED IN SAMPLE"
+    print "NORMALIZED IN SAMPLE"
     cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = ms.compute_portfolio_stats(portfolio_value_norm)
     cum_ret_bench, avg_daily_ret_bench, std_daily_ret_bench, sharpe_ratio_bench = ms.compute_portfolio_stats(
         benchmark_value_norm)
+    print "Sharpe Ratio of Portfolio: {}".format(sharpe_ratio)
+    print "Sharpe Ratio of Benchmark : {}".format(sharpe_ratio_bench)
     print
-    "Sharpe Ratio of Portfolio: {}".format(sharpe_ratio)
+    print "Cumulative Return of Portfolio: {}".format(cum_ret)
+    print "Cumulative Return of Benchmark: {}".format(cum_ret_bench)
     print
-    "Sharpe Ratio of Benchmark : {}".format(sharpe_ratio_bench)
+    print "Standard Deviation of Portfolio: {}".format(std_daily_ret)
+    print "Standard Deviation of Benchmark: {}".format(std_daily_ret_bench)
     print
-    print
-    "Cumulative Return of Portfolio: {}".format(cum_ret)
-    print
-    "Cumulative Return of Benchmark: {}".format(cum_ret_bench)
-    print
-    print
-    "Standard Deviation of Portfolio: {}".format(std_daily_ret)
-    print
-    "Standard Deviation of Benchmark: {}".format(std_daily_ret_bench)
-    print
-    print
-    "Average Daily Return of Portfolio: {}".format(avg_daily_ret)
-    print
-    "Average Daily Return of Benchmark: {}".format(avg_daily_ret_bench)
+    print "Average Daily Return of Portfolio: {}".format(avg_daily_ret)
+    print "Average Daily Return of Benchmark: {}".format(avg_daily_ret_bench)
 
 
 if __name__ == "__main__":

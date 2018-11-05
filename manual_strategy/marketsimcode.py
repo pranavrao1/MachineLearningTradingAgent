@@ -75,7 +75,7 @@ def compute_portvals(orders_df, start_val=1000000, commission=9.95, impact=0.005
         if row['Order'] == 'SELL':
             multiplier = -1
         volume = multiplier * number_shares
-        if row["Order"] != 'HOLD':
+        if row['Order'] != 'NA':
             if date in prices_df.index:
                 stock_price = prices_df.loc[date][symbol]
                 transaction = volume * stock_price

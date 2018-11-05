@@ -86,7 +86,7 @@ if __name__ == "__main__":
     third_plot.set_xlim(percent_date_min, percent_date_max)
     plt.axhline(y=1.00, color='black', linestyle='--')
     plt.axhline(y=0.00, color='black', linestyle='--')
-    plt.axhspan(1.00, -1.00, alpha=0.3, color='gray')
+    plt.axhspan(1.00, 0.00, alpha=0.3, color='gray')
     plt.savefig('Bollinger Bands Percent for Stock.png')
     plt.clf()
     plt.cla()

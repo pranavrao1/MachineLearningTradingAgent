@@ -75,12 +75,13 @@ def compute_portvals(orders_df, start_val=1000000, commission=9.95, impact=0.005
         if row['Order'] == 'SELL':
             multiplier = -1
         volume = multiplier * number_shares
-        if date in prices_df.index:
-            stock_price = prices_df.loc[date][symbol]
-            transaction = volume * stock_price
-            trades_impact = number_shares * stock_price * impact
-            trades_df.loc[date][symbol] += volume
-            trades_df.loc[date]['Cash'] += -1 * transaction - commission - trades_impact
+        if row["Order"] != 'HOLD':
+            if date in prices_df.index:
+                stock_price = prices_df.loc[date][symbol]
+                transaction = volume * stock_price
+                trades_impact = number_shares * stock_price * impact
+                trades_df.loc[date][symbol] += volume
+                trades_df.loc[date]['Cash'] += -1 * transaction - commission - trades_impact
 
     # Enter Data into holdings DF
     holdings_df = trades_df

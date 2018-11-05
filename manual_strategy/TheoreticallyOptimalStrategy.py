@@ -6,6 +6,9 @@ import marketsimcode as ms
 import matplotlib.dates as matplot_dates
 import matplotlib.pyplot as plt
 
+def author():
+    return 'prao43'
+
 def testPolicy(symbol = "AAPL",
                sd=dt.datetime(2010,1,1),
                ed=dt.datetime(2011,12,31),
@@ -42,15 +45,15 @@ def testPolicy(symbol = "AAPL",
             orders_df.loc[current_date]['Order'] = 'SELL'
             if total_holdings == 0:
                 shares_df.loc[current_date]['Shares'] = 1000
-                holdings_df.loc[current_date]['Holdings'] = -10000
+                holdings_df.loc[current_date]['Holdings'] = -1000
                 total_holdings -= 1000
             else:
                 shares_df.loc[current_date]['Shares'] = 2000
-                holdings_df.loc[current_date]['Holdings'] = -20000
+                holdings_df.loc[current_date]['Holdings'] = -2000
                 total_holdings -= 2000
     trades_df = pd.concat([symbols_df, orders_df, shares_df, holdings_df], axis=1)
     trades_df.columns = ['Symbol', 'Order', 'Shares', 'Holdings']
-    return trades_df[trades_df.Order != 'HOLD']
+    return trades_df
 
 def testPolicyBenchmark(symbol = "AAPL",
                sd=dt.datetime(2010,1,1),

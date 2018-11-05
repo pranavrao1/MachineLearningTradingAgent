@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as matplot_dates
 import marketsimcode as ms
 
+def author():
+    return 'prao43'
+
 def testPolicy(symbol = "AAPL",
                sd=dt.datetime(2010,1,1),
                ed=dt.datetime(2011,12,31),
@@ -71,7 +74,7 @@ def testPolicy(symbol = "AAPL",
 
     trades_df = pd.concat([symbols_df, orders_df, shares_df, holdings_df], axis=1)
     trades_df.columns = ['Symbol', 'Order', 'Shares', 'Holdings']
-    return trades_df[trades_df.Order != 'HOLD']
+    return trades_df
 
 def testPolicyBenchmark(symbol = "AAPL",
                sd=dt.datetime(2010,1,1),
@@ -84,11 +87,12 @@ def testPolicyBenchmark(symbol = "AAPL",
     prices_normalized_df = prices_df / prices_df.ix[0, :]
 
     shares_df = pd.DataFrame(0, index = prices_normalized_df.index, columns = ['Shares'])
-    orders_df = pd.DataFrame('BUY', index = prices_normalized_df.index, columns = ['Order'])
+    orders_df = pd.DataFrame('HOLD', index = prices_normalized_df.index, columns = ['Order'])
     symbols_df = pd.DataFrame(symbol, index = prices_normalized_df.index, columns = ['Symbol'])
     holdings_df = pd.DataFrame(0, index = prices_normalized_df.index, columns = ['Holdings'])
 
     current_date = prices_normalized_df.index[0]
+    orders_df.loc[current_date]['Order'] = 'BUY'
     shares_df.loc[current_date]['Shares'] = 1000
     trades_df = pd.concat([symbols_df, orders_df, shares_df, holdings_df], axis=1)
     trades_df.columns = ['Symbol', 'Order', 'Shares', 'Holdings']
@@ -110,6 +114,7 @@ def generateSecondPlot():
     portfolio_value_out.fillna(method='bfill', inplace=True)
     portfolio_value_norm = portfolio_value_out / portfolio_value_out.ix[0, :]
     trades_df_benchmark_out = testPolicyBenchmark(symbol="JPM", sd=start_date, ed=end_date, sv=start_value)
+    trades_df_benchmark_out.to_csv('trades_df_benchmark_out.csv')
     benchmark_value_out = ms.compute_portvals(trades_df_benchmark_out, start_val=start_value, commission=9.95,
                                               impact=0.005)
     benchmark_value_out.fillna(method='ffill', inplace=True)
@@ -117,6 +122,7 @@ def generateSecondPlot():
     benchmark_value_norm = benchmark_value_out / benchmark_value_out.ix[0, :]
     second_plot = portfolio_value_norm.plot(grid=True, title='Manual Strategy Out-Sample', use_index=True,
                                                 color='black')
+    benchmark_value_norm.to_csv('benchmark_out.csv')
     assign_plot_labels(trades_df, second_plot)
     third_plot = benchmark_value_norm.plot(grid=True, title='', use_index=True, color='blue')
     assign_plot_labels(trades_df, third_plot)

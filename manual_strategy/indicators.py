@@ -10,6 +10,8 @@ import pandas as pd
 
 from util import get_data, plot_data
 
+def author():
+    return 'prao43'
 
 def set_plot_values(first_plot):
     first_plot.xaxis.set_major_locator(months)
@@ -83,7 +85,7 @@ if __name__ == "__main__":
     third_plot.set_ylabel("BB Percentage")
     third_plot.set_xlim(percent_date_min, percent_date_max)
     plt.axhline(y=1.00, color='black', linestyle='--')
-    plt.axhline(y=-1.00, color='black', linestyle='--')
+    plt.axhline(y=0.00, color='black', linestyle='--')
     plt.axhspan(1.00, -1.00, alpha=0.3, color='gray')
     plt.savefig('Bollinger Bands Percent for Stock.png')
     plt.clf()

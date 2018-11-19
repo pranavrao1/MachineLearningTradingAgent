@@ -51,9 +51,10 @@ class QLearner(object):
         self.alpha = alpha
         self.gamma = gamma
         self.num_states = num_states
-        self.Q = (np.random.rand(num_states, num_actions))
+        self.q_matrix = (np.random.rand(num_states, num_actions))
         self.reward_matrix = np.zeros((num_states, num_actions))
         self.transition_matrix = np.zeros((num_states, num_actions, num_states))
+        self.transition_matrix_second = np.zeros((num_states, num_actions, num_states))
 
     def querysetstate(self, s):
         """  		   	  			    		  		  		    	 		 		   		 		  
@@ -65,7 +66,7 @@ class QLearner(object):
         if np.random.uniform() < self.rar:
             action = rand.randint(0, self.num_actions-1)
         else:
-            action = np.argmax(self.Q[s, :])
+            action = np.argmax(self.q_matrix[s, :])
         if self.verbose: print "s =", s,"a =",action
         self.action = action
         return action
@@ -78,20 +79,18 @@ class QLearner(object):
         @returns: The selected action
         """
         #action = rand.randint(0, self.num_actions-1)
-        self.Q[self.state,self.action] = (1 - self.alpha) * self.Q[self.state,self.action] + self.alpha * (r + (self.gamma * np.max(self.Q[s_prime,:])))
+        self.q_matrix[self.state, self.action] = (1 - self.alpha) * self.q_matrix[self.state, self.action] + self.alpha * (r + (self.gamma * np.max(self.q_matrix[s_prime, :])))
 
         if (self.dyna > 0):
-            self.transition_matrix[self.state, self.action, s_prime] = self.transition_matrix[self.state, self.action, s_prime] + 1
-            self.transition_matrix = self.transition_matrix/self.transition_matrix.sum(axis=2, keepdims=True)
+            self.transition_matrix_second[self.state, self.action, s_prime] = self.transition_matrix_second[self.state, self.action, s_prime] + 1
+            self.transition_matrix = self.transition_matrix_second/self.transition_matrix_second.sum(axis=2, keepdims=True)
             self.reward_matrix[self.state, self.action] = ((1 - self.alpha) * self.reward_matrix[self.state, self.action]) + (self.alpha * r)
             counter = 0
             while counter < self.dyna:
                 state_random = rand.randint(0, self.num_states - 1)
                 action_random = rand.randint(0, self.num_actions - 1)
                 s_prime_random = np.random.multinomial(100, self.transition_matrix[state_random,action_random,:]).argmax()
-                prior_value = (1 - self.alpha) * self.Q[state_random, action_random]
-                future_value = self.alpha * (self.reward_matrix[state_random, action_random]+ (self.gamma * np.max(self.Q[s_prime_random, :])))
-                self.Q[state_random, action_random] =  prior_value + future_value
+                self.q_matrix[state_random, action_random] = (1 - self.alpha) * self.q_matrix[state_random, action_random] + self.alpha * (self.reward_matrix[state_random, action_random] + (self.gamma * np.max(self.q_matrix[s_prime_random, :])))
                 counter+=1
 
         action = self.querysetstate(s_prime)

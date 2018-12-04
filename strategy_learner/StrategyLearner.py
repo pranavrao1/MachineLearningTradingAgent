@@ -187,6 +187,67 @@ class StrategyLearner(object):
         shares_df = shares_df[shares_df.Shares != 0]
         return shares_df
 
+    def testPolicyWithAdditionalStats(self, symbol = "IBM", \
+        sd=dt.datetime(2009,1,1), \
+        ed=dt.datetime(2010,1,1), \
+        sv = 10000):
+        # add your code to do learning here
+        window = 20  # days of window
+
+        # example usage of the old backward compatible util function
+        syms = [symbol]
+        dates = pd.date_range(sd, ed)
+        prices_all = ut.get_data(syms, dates)  # automatically adds SPY
+        prices = prices_all[syms]  # only portfolio symbols
+        if self.verbose: print
+        prices
+
+        # this is so there are not na's before the window starts
+        start_date_adj = sd - dt.timedelta(window + 50)
+        normed_prices = self.normalize_df(prices)
+        momentum = self.compute_momentum(syms, start_date_adj, ed, window)
+        sma = self.compute_sma(syms, start_date_adj, ed, window)
+        bb = self.compute_bollinger(syms, start_date_adj, ed)
+        bb_percent = self.compute_bb_percentage(bb, normed_prices, symbol)
+        indicators = pd.concat([sma, momentum, bb_percent, bb], axis=1)
+        indicators = indicators.loc[sd:]
+        normed_prices = normed_prices[sd:]
+
+        state = self.discretize(indicators)
+        initial_state = state.iloc[0]['State']
+        shares_df = pd.DataFrame(0, index=normed_prices.index, columns=['Shares'])
+        orders_df = pd.DataFrame('HOLD', index=normed_prices.index, columns=['Order'])
+        symbols_df = pd.DataFrame(symbol, index=normed_prices.index, columns=['Symbol'])
+        holdings_df = pd.DataFrame(0, index=normed_prices.index, columns=['Holdings'])
+        total_holdings = 0
+        self.ql.querysetstate(initial_state)
+
+        for index, row in normed_prices.iterrows():
+            a = self.ql.querysetstate(state.loc[index]['State'])
+            if (a == 1) and (total_holdings < 1000):
+                orders_df.loc[index]['Order'] = 'BUY'
+                if total_holdings == 0:
+                    shares_df.loc[index]['Shares'] = 1000
+                    total_holdings += 1000
+                else:
+                    shares_df.loc[index]['Shares'] = 2000
+                    total_holdings += 2000
+            elif (a == 2) and (total_holdings > -1000):
+                orders_df.loc[index]['Order'] = 'SELL'
+                if total_holdings == 0:
+                    shares_df.loc[index]['Shares'] = -1000
+                    total_holdings -= 1000
+                else:
+                    shares_df.loc[index]['Shares'] = -2000
+                    total_holdings -= 2000
+
+        df_trades = pd.concat([symbols_df, orders_df, shares_df, holdings_df], axis=1)
+        df_trades.columns = ['Symbol', 'Order', 'Shares', 'Holdings']
+        df_trades = df_trades[df_trades.Shares != 0]
+        df_trades['Shares'] = df_trades['Shares'].abs()
+        return df_trades
+
+
     def discretize(self, df):
         bins = ['0', '1', '2', '3', '4', '5']
         columns = ['SMA', 'Price/SMA', 'Momentum',

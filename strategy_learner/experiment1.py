@@ -74,4 +74,3 @@ if __name__ == "__main__":
     print"Manual Strategy,{},{},{},{},{}".format(sharpe_ratio, cum_ret, std_daily_ret, avg_daily_ret, trades_ms_df.shape[0])
     print"Benchmark,{},{},{},{},1".format(sharpe_ratio_bmk, cum_ret_bmk, std_daily_ret_bmk, avg_daily_ret_bmk)
     plt.savefig("experiment1.png")
-    plt.show()

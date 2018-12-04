@@ -39,4 +39,3 @@ if __name__ == "__main__":
     f1.set_ylabel("Normalized Portfolio Value")
     f1.set_xlim(datemin, datemax)
     plt.savefig('experiment2.png')
-    plt.show()

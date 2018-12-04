@@ -327,6 +327,3 @@ class StrategyLearner(object):
   		   	  			    		  		  		    	 		 		   		 		  
 if __name__=="__main__":  		   	  			    		  		  		    	 		 		   		 		  
     print "One does not simply think up a strategy"
-    tester = StrategyLearner(verbose=False)
-    tester.addEvidence()
-    tester.testPolicy()

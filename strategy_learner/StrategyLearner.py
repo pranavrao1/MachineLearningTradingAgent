@@ -253,13 +253,13 @@ class StrategyLearner(object):
         columns = ['SMA', 'Price/SMA', 'Momentum',
                    'BBP', 'lower', 'upper',
                    'band']
-        tmp = pd.DataFrame(0, index=df.index, columns=columns)
+        temporary_df = pd.DataFrame(0, index=df.index, columns=columns)
         # states
         for c in columns:
-            tmp[c] = pd.cut(df[c], bins=6, labels=bins)
+            temporary_df[c] = pd.cut(df[c], bins=6, labels=bins)
 
         state = pd.DataFrame(0, index=df.index, columns=['State'])
-        state['State'] = tmp['Momentum'].astype(str) + tmp['BBP'].astype(str)
+        state['State'] = temporary_df['Momentum'].astype(str) + temporary_df['BBP'].astype(str)
         state['State'] = state['State'].astype(int)
         return state
 
@@ -326,7 +326,7 @@ class StrategyLearner(object):
         return daily_returns
   		   	  			    		  		  		    	 		 		   		 		  
 if __name__=="__main__":  		   	  			    		  		  		    	 		 		   		 		  
-    print "One does not simply think up a strategy"
+    print "One does not simply think up a strategy"disc
     tester = StrategyLearner(verbose=False)
     tester.addEvidence()
     tester.testPolicy()

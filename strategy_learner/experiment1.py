@@ -11,32 +11,32 @@ import matplotlib.pyplot as plt
 def author():
     return 'prao43'
 
-def normalize_stocks(df):
+def normalize_df(df):
     df.fillna(method='ffill', inplace=True)
     df.fillna(method='bfill', inplace=True)
     return df/df.ix[0,:]
 
 if __name__ == "__main__":
-    sd = dt.datetime(2008,1,1)
-    ed = dt.datetime(2009,12,31)
+    start_date = dt.datetime(2008, 1, 1)
+    end_date = dt.datetime(2009, 12, 31)
     sv = 100000
     commission = 0.0
     impact = 0.0
     strategy_learner = sl.StrategyLearner(verbose = False, impact=impact)
-    strategy_learner.addEvidence(symbol = "JPM", sd=sd, ed=ed, sv=sv)
-    trades_df = strategy_learner.testPolicyWithAdditionalStats(symbol ="JPM", sd=sd, ed=ed, sv=sv)
+    strategy_learner.addEvidence(symbol = "JPM", sd=start_date, ed=end_date, sv=sv)
+    trades_df = strategy_learner.testPolicyWithAdditionalStats(symbol ="JPM", sd=start_date, ed=end_date, sv=sv)
 
     portvals_sl = msc.compute_portvals(trades_df, start_val = sv, commission=commission, impact=impact)
-    df_trades_ms = ms.testPolicy(symbol = "JPM", sd=sd, ed=ed, sv = sv)
-    portvals_ms = msc.compute_portvals(df_trades_ms, start_val = sv, commission=commission, impact=impact)
+    trades_ms_df = ms.testPolicy(symbol ="JPM", sd=start_date, ed=end_date, sv = sv)
+    portvals_ms = msc.compute_portvals(trades_ms_df, start_val = sv, commission=commission, impact=impact)
 
-    benchmark = ms.testPolicyBenchmark(symbol="JPM", sd=sd, ed=ed, sv=sv)
-    portvals_benchmark = msc.compute_portvals(benchmark, start_val=sv, commission=commission, impact=impact)
+    benchmark = ms.testPolicyBenchmark(symbol="JPM", sd=start_date, ed=end_date, sv=sv)
+    port_values_benchmark = msc.compute_portvals(benchmark, start_val=sv, commission=commission, impact=impact)
 
 
-    normed_prices_benchmark = normalize_stocks(portvals_benchmark)
-    normed_prices_ms = normalize_stocks(portvals_ms)
-    normed_prices_sl = normalize_stocks(portvals_sl)
+    normed_prices_benchmark = normalize_df(port_values_benchmark)
+    normed_prices_ms = normalize_df(portvals_ms)
+    normed_prices_sl = normalize_df(portvals_sl)
     chart_df = pd.concat([normed_prices_ms, normed_prices_benchmark, normed_prices_sl], axis=1)
     chart_df.columns = ['Manual Strategy', 'Benchmark', 'Strategy Learner']
     f1 = chart_df.plot(grid=True, title='Manual Strategy vs Strategy Learner', use_index=True,
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     print"Avg Daily Ret Manual Strategy:{}".format(avg_daily_ret)
     print"Avg Daily Ret Benchmark:{}".format(avg_daily_ret_bmk)
     print"Strategy Learner,{},{},{},{},{}".format(sharpe_ratio_sl, cum_ret_sl, std_daily_ret_sl, avg_daily_ret_sl, trades_df.shape[0])
-    print"Manual Strategy,{},{},{},{},{}".format(sharpe_ratio, cum_ret, std_daily_ret, avg_daily_ret,df_trades_ms.shape[0])
+    print"Manual Strategy,{},{},{},{},{}".format(sharpe_ratio, cum_ret, std_daily_ret, avg_daily_ret, trades_ms_df.shape[0])
     print"Benchmark,{},{},{},{},1".format(sharpe_ratio_bmk, cum_ret_bmk, std_daily_ret_bmk, avg_daily_ret_bmk)
     plt.savefig("experiment1.png")
     plt.show()

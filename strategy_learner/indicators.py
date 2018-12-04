@@ -13,69 +13,6 @@ from util import get_data, plot_data
 def author():
     return 'prao43'
 
-
-def normalize_df(df):
-    df.fillna(method='ffill', inplace=True)
-    df.fillna(method='bfill', inplace=True)
-    return df/df.ix[0,:]
-
-def compute_bollinger(symbols=['JPM'],
-                      sd='2008-01-01',
-                      ed='2009-12-31',
-                      window=20):
-    dates = pd.date_range(sd, ed)
-    prices_all = get_data(symbols, dates)
-    normed_prices = normalize_df(prices_all)
-    columns = ['lower', 'upper', 'band']
-    bb = pd.DataFrame(0, index=normed_prices.index, columns=columns)
-    bb['band'] = normed_prices.rolling(window=window, min_periods=window).std()
-    sma = compute_sma(symbols, sd, ed, window)
-    bb['upper'] = sma['SMA'] + (bb['band'] * 2)
-    bb['lower'] = sma['SMA'] - (bb['band'] * 2)
-    return bb
-
-def compute_sma(symbols=['JPM'],
-                sd='2008-01-01',
-                ed='2009-12-31',
-                window=20):
-    """
-    Simple Moving Average
-    window size default of 20
-    """
-    dates = pd.date_range(sd, ed)
-    prices_all = get_data(symbols, dates)
-    normed_prices = normalize_df(prices_all)
-    columns = ['SMA', 'Price/SMA']
-    sma = pd.DataFrame(0, index = normed_prices.index, columns = columns)
-    sma['SMA'] = normed_prices[symbols[0]].rolling(window=window,center=False).mean()
-    sma['Price/SMA'] = normed_prices[symbols[0]]/sma['SMA']
-    return sma
-
-def compute_bb_percentage(bb, normed_syms, symbol):
-    bb_percent = pd.DataFrame(0, index = normed_syms.index, columns =['BBP'])
-    bb_percent['BBP'] = (normed_syms[symbol] - bb['lower']) / (bb['upper'] - bb['lower'])
-    return bb_percent
-
-def compute_momentum(symbols=['JPM'],
-                     sd='2008-01-01',
-                     ed='2009-12-31',
-                     window=20):
-    dates = pd.date_range(sd, ed)
-    prices_all = get_data(symbols, dates)
-    normed_prices = normalize_df(prices_all)
-    columns =['Momentum']
-    momentum = pd.DataFrame(0, index = normed_prices[symbols[0]].index, columns = columns)
-    momentum['Momentum'] = normed_prices[symbols[0]].diff(window)/normed_prices[symbols[0]].shift(window)
-    return momentum
-
-def compute_daily_returns(df):
-        daily_returns = df.copy()
-        daily_returns[1:] = (df[1:] / df[:-1].values) - 1
-        return daily_returns
-
-def author():
-    return 'prao43'
-
 def set_plot_values(first_plot):
     first_plot.xaxis.set_major_locator(months)
     first_plot.xaxis.set_major_formatter(monthsFmt)

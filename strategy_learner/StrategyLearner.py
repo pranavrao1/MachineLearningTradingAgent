@@ -28,10 +28,9 @@ GT ID: 900897987 (replace with your GT ID)
   		   	  			    		  		  		    	 		 		   		 		  
 import datetime as dt  		   	  			    		  		  		    	 		 		   		 		  
 import pandas as pd  		   	  			    		  		  		    	 		 		   		 		  
-import util as ut  		   	  			    		  		  		    	 		 		   		 		  
-import random
+import util as ut
 import QLearner as ql
-import indicators as ind
+from util import get_data, plot_data
   		   	  			    		  		  		    	 		 		   		 		  
 class StrategyLearner(object):  		   	  			    		  		  		    	 		 		   		 		  
   		   	  			    		  		  		    	 		 		   		 		  
@@ -59,23 +58,23 @@ class StrategyLearner(object):
   		   	  			    		  		  		    	 		 		   		 		  
         # example usage of the old backward compatible util function  		   	  			    		  		  		    	 		 		   		 		  
         syms=[symbol]  		   	  			    		  		  		    	 		 		   		 		  
-        dates = pd.date_range(sd, ed)  		   	  			    		  		  		    	 		 		   		 		  
+        dates = pd.date_range(sd, ed)
         prices_all = ut.get_data(syms, dates)  # automatically adds SPY  		   	  			    		  		  		    	 		 		   		 		  
         prices = prices_all[syms]  # only portfolio symbols
         if self.verbose: print prices
 
 
         # this is so there are not na's before the window starts
-        sd_adj = sd - dt.timedelta(window + 50)
-        normed_prices = ind.normalize_df(prices)
-        momentum = ind.compute_momentum(syms, sd_adj, ed, window)
-        sma = ind.compute_sma(syms, sd_adj, ed, window)
-        bb = ind.compute_bollinger(syms, sd_adj, ed)
-        bb_percent = ind.compute_bb_percentage(bb,normed_prices, symbol)
+        start_date_adj = sd - dt.timedelta(window + 50)
+        normed_prices = self.normalize_df(prices)
+        momentum = self.compute_momentum(syms, start_date_adj, ed, window)
+        sma = self.compute_sma(syms, start_date_adj, ed, window)
+        bb = self.compute_bollinger(syms, start_date_adj, ed)
+        bb_percent = self.compute_bb_percentage(bb,normed_prices, symbol)
         indicators = pd.concat([sma, momentum, bb_percent, bb], axis=1)
         indicators = indicators.loc[sd:]
         normed_prices = normed_prices[sd:]
-        daily_returns = ind.compute_daily_returns(normed_prices)
+        daily_returns = self.compute_daily_returns(normed_prices)
 
         state = self.discretize(indicators)
         initial_state = state.iloc[0]['State']
@@ -86,45 +85,44 @@ class StrategyLearner(object):
         symbols_df = pd.DataFrame(symbol, index=normed_prices.index, columns=['Symbol'])
         holdings_df = pd.DataFrame(0, index=normed_prices.index, columns=['Holdings'])
 
-        iterations = 50
-        old_reward = []
-        for i in range(0, iterations):
-            if len(old_reward) > 10:
-                old_reward.pop(0)
+        count = 50
+        rewards = []
+        current_reward = 0
+        for i in range(0, count):
+            if len(rewards) > 10:
+                rewards.pop(0)
             if i > 25:
-                old_reward.append(reward)
+                rewards.append(current_reward)
                 # Policy has converged
-                if (len(old_reward) > 10) and all(old_reward[0] == r for r in old_reward):
+                if (len(rewards) > 10) and all(rewards[0] == r for r in rewards):
                     break
-
-            total_holdings = 0
-            reward = 0
+            sum_holdings = 0
+            current_reward = 0
             # Do some action
             for index, row in normed_prices.iterrows():
-                reward = float(total_holdings * daily_returns.loc[index]) * (1 - self.impact)
-                # implement action
-                a = self.ql.query(state.loc[index]['State'], reward)
-                if (a == 1) and (total_holdings < 1000):
+                current_reward = float(sum_holdings * daily_returns.loc[index]) * (1 - self.impact)
+                a = self.ql.query(state.loc[index]['State'], current_reward)
+                if (a == 1) and (sum_holdings < 1000):
                     orders_df.loc[index]['Order'] = 'BUY'
-                    if total_holdings == 0:
+                    if sum_holdings == 0:
                         shares_df.loc[index]['Shares'] = 1000
-                        total_holdings += 1000
-                        holdings_df.loc[index]['Holdings'] = total_holdings
+                        sum_holdings += 1000
+                        holdings_df.loc[index]['Holdings'] = sum_holdings
                     else:
                         shares_df.loc[index]['Shares'] = 2000
-                        total_holdings += 2000
-                        holdings_df.loc[index]['Holdings'] = total_holdings
-                elif (a == 2) and (total_holdings > -1000):
+                        sum_holdings += 2000
+                        holdings_df.loc[index]['Holdings'] = sum_holdings
+                elif (a == 2) and (sum_holdings > -1000):
                     orders_df.loc[index]['Order'] = 'SELL'
-                    if total_holdings == 0:
+                    if sum_holdings == 0:
                         shares_df.loc[index]['Shares'] = -1000
-                        total_holdings -= 1000
-                        holdings_df.loc[index]['Holdings'] = total_holdings
+                        sum_holdings -= 1000
+                        holdings_df.loc[index]['Holdings'] = sum_holdings
                     else:
                         shares_df.loc[index]['Shares'] = -2000
-                        total_holdings -= 2000
-                        holdings_df.loc[index]['Holdings'] = total_holdings
-                holdings_df.loc[index]['Holdings'] = total_holdings
+                        sum_holdings -= 2000
+                        holdings_df.loc[index]['Holdings'] = sum_holdings
+                holdings_df.loc[index]['Holdings'] = sum_holdings
             df_trades = pd.concat([symbols_df, orders_df, shares_df, holdings_df], axis=1)
             df_trades.columns = ['Symbol', 'Order', 'Shares', 'Holdings']
             df_trades = df_trades[df_trades.Shares != 0]
@@ -146,35 +144,28 @@ class StrategyLearner(object):
         dates = pd.date_range(sd, ed)
         prices_all = ut.get_data(syms, dates)  # automatically adds SPY
         prices = prices_all[syms]  # only portfolio symbols
-        prices_SPY = prices_all['SPY']  # only SPY, for comparison later
         if self.verbose: print
         prices
 
         # this is so there are not na's before the window starts
-        sd_adj = sd - dt.timedelta(window + 50)
-        normed_prices = ind.normalize_df(prices)
-        momentum = ind.compute_momentum(syms, sd_adj, ed, window)
-        sma = ind.compute_sma(syms, sd_adj, ed, window)
-        bb = ind.compute_bollinger(syms, sd_adj, ed)
-        bb_percent = ind.compute_bb_percentage(bb, normed_prices, symbol)
+        start_date_adj = sd - dt.timedelta(window + 50)
+        normed_prices = self.normalize_df(prices)
+        momentum = self.compute_momentum(syms, start_date_adj, ed, window)
+        sma = self.compute_sma(syms, start_date_adj, ed, window)
+        bb = self.compute_bollinger(syms, start_date_adj, ed)
+        bb_percent = self.compute_bb_percentage(bb, normed_prices, symbol)
         indicators = pd.concat([sma, momentum, bb_percent, bb], axis=1)
         indicators = indicators.loc[sd:]
         normed_prices = normed_prices[sd:]
 
         state = self.discretize(indicators)
         initial_state = state.iloc[0]['State']
-        self.ql.querysetstate(initial_state)
-
         shares_df = pd.DataFrame(0, index=normed_prices.index, columns=['Shares'])
         orders_df = pd.DataFrame('HOLD', index=normed_prices.index, columns=['Order'])
-
-
         total_holdings = 0
-
         self.ql.querysetstate(initial_state)
 
         for index, row in normed_prices.iterrows():
-            # implement action
             a = self.ql.querysetstate(state.loc[index]['State'])
             if (a == 1) and (total_holdings < 1000):
                 orders_df.loc[index]['Order'] = 'BUY'
@@ -197,7 +188,7 @@ class StrategyLearner(object):
         return shares_df
 
     def discretize(self, df):
-        bins = [0, 1, 2, 3, 4, 5]
+        bins = ['0', '1', '2', '3', '4', '5']
         columns = ['SMA', 'Price/SMA', 'Momentum',
                    'BBP', 'lower', 'upper',
                    'band']
@@ -213,6 +204,65 @@ class StrategyLearner(object):
 
     def author(self):
         return 'prao43'
+
+    def normalize_df(self, df):
+        df.fillna(method='ffill', inplace=True)
+        df.fillna(method='bfill', inplace=True)
+        return df / df.ix[0, :]
+
+    def compute_bollinger(self, symbols=['JPM'],
+                          start_date='2008-01-01',
+                          end_date='2009-12-31',
+                          window=20):
+        dates = pd.date_range(start_date, end_date)
+        prices_all = get_data(symbols, dates)
+        normed_prices = self.normalize_df(prices_all)
+        columns = ['lower', 'upper', 'band']
+        bb = pd.DataFrame(0, index=normed_prices.index, columns=columns)
+        bb['band'] = normed_prices.rolling(window=window, min_periods=window).std()
+        sma = self.compute_sma(symbols, start_date, end_date, window)
+        bb['upper'] = sma['SMA'] + (bb['band'] * 2)
+        bb['lower'] = sma['SMA'] - (bb['band'] * 2)
+        return bb
+
+    def compute_sma(self, symbols=['JPM'],
+                    start_date='2008-01-01',
+                    end_date='2009-12-31',
+                    window=20):
+        """
+        Simple Moving Average
+        window size default of 20
+        """
+        dates = pd.date_range(start_date, end_date)
+        prices_all = get_data(symbols, dates)
+        normed_prices = self.normalize_df(prices_all)
+        columns = ['SMA', 'Price/SMA']
+        sma = pd.DataFrame(0, index=normed_prices.index, columns=columns)
+        sma['SMA'] = normed_prices[symbols[0]].rolling(window=window, center=False).mean()
+        sma['Price/SMA'] = normed_prices[symbols[0]] / sma['SMA']
+        return sma
+
+    def compute_bb_percentage(self, bb, normed_syms, symbol):
+        bb_percent = pd.DataFrame(0, index=normed_syms.index, columns=['BBP'])
+        bb_percent['BBP'] = (normed_syms[symbol] - bb['lower']) / (bb['upper'] - bb['lower'])
+        return bb_percent
+
+    def compute_momentum(self, symbols=['JPM'],
+                         start_date='2008-01-01',
+                         end_date='2009-12-31',
+                         window=20):
+        dates = pd.date_range(start_date, end_date)
+        prices_all = get_data(symbols, dates)
+        normed_prices = self.normalize_df(prices_all)
+        columns = ['Momentum']
+        momentum = pd.DataFrame(0, index=normed_prices[symbols[0]].index, columns=columns)
+        momentum['Momentum'] = normed_prices[symbols[0]].diff(window) / normed_prices[symbols[0]].shift(window)
+        return momentum
+
+    def compute_daily_returns(self, df):
+        daily_returns = df.copy()
+        daily_returns[1:] = (df[1:] / df[:-1].values) - 1
+        return daily_returns
   		   	  			    		  		  		    	 		 		   		 		  
 if __name__=="__main__":  		   	  			    		  		  		    	 		 		   		 		  
     print "One does not simply think up a strategy"
